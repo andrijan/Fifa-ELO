@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block extra_head %}{% endblock %}
+{% block css_block %}{% endblock %}
+{% block js_block %}{% endblock %}
+
+{% block content %}
+  <div id="container">
+
+    <header>
+    {% block header%}
+    {% endblock header %}
+    </header>
+    
+    <div id="main">
+    {% block main %}
+    {% endblock main %}
+    </div> <!-- #main -->
+    
+    <footer>
+      {% block footer %}
+      {% endblock footer %}
+    </footer>
+    
+  </div> <!-- #container -->
+{% endblock content %}

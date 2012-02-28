@@ -1,0 +1,23 @@
+#general
+ipython
+ipdb
+fabric
+Django
+requests
+path.py
+urlobject
+
+#dependencies
+# dep for django-compressor
+BeautifulSoup
+# dep for easy-thumbnails
+PIL
+
+
+#django specific
+django-compressor
+django-extensions
+django-pagination
+django-mailer
+django-uni-form
+easy-thumbnails
