@@ -1,23 +1,16 @@
-#general
-ipython
-ipdb
-fabric
-Django
-requests
-path.py
-urlobject
-
-#dependencies
-# dep for django-compressor
-BeautifulSoup
-# dep for easy-thumbnails
-PIL
-
-
-#django specific
-django-compressor
-django-extensions
-django-pagination
-django-mailer
-django-uni-form
-easy-thumbnails
+BeautifulSoup==3.2.1
+Django==1.3.1
+PIL==1.1.7
+URLObject==2.0.0
+Werkzeug==0.8.3
+certifi==0.0.8
+chardet==1.0.1
+django-appconf==0.5
+django-extensions==0.8
+django-staticfiles==1.2.1
+easy-thumbnails==1.0-alpha-21
+ipdb==0.6.1
+ipython==0.12
+path.py==2.2.2
+requests==0.10.6
+wsgiref==0.1.2
