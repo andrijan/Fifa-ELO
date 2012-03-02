@@ -56,8 +56,8 @@ ugettext = lambda s: s # rather hackish but suggested by...
 ## ... http://docs.djangoproject.com/en/1.1/topics/i18n/deployment/#how-django-discovers-language-preference
 ## to prevent circular dependancies
 LANGUAGES = (
-    #('en', ugettext('English')),
-    ('de', ugettext('German')),
+    ('en', ugettext('English')),
+    #('de', ugettext('German')),
 )
 
 DEFAULT_HTTP_PROTOCOL = 'http'
@@ -129,6 +129,7 @@ TEMPLATE_CONTEXT_PROCESSORS = [
     "django.core.context_processors.i18n",
     "django.core.context_processors.media",
     "django.core.context_processors.request",
+    'django.core.context_processors.static',
     "django.contrib.messages.context_processors.messages",
 
     'core.context_processors.global_settings',
@@ -138,7 +139,6 @@ TEMPLATE_CONTEXT_PROCESSORS = [
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'compressor.finders.CompressorFinder',
 )
 
 INSTALLED_APPS = (
@@ -155,6 +155,9 @@ INSTALLED_APPS = (
     #external
     'django_extensions',
     'easy_thumbnails',
+
+    #Database
+    'django_evolution',
 
     #internal
     'core',
