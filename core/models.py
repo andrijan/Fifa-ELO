@@ -74,9 +74,9 @@ class Game(models.Model):
             e2 = 1/(1+10**((p1-p2)/400))
             p1new = p1+32*(result-e1)
             p2new = p2+32*(1-result-e2)
-            np1 = Points(team=self.home_team,points=p1new)
+            np1 = Points(team=self.home_team,points=p1new, game=self)
             np1.save()
-            np2 = Points(team=self.away_team,points=p2new)
+            np2 = Points(team=self.away_team,points=p2new, game=self)
             np2.save()
         super(Game, self).save(*args, **kwargs)
 
@@ -84,6 +84,7 @@ class Points(models.Model):
     team = models.ForeignKey(Team)
     date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     points = models.FloatField("Elo Points")
+    game = models.ForeignKey(Game, null=True, blank=True)
 
     def __unicode__(self):
         return u'%s: %s - %s' % (self.date, self.team, self.points)
