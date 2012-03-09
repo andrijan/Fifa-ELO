@@ -11,7 +11,7 @@ class Team(models.Model):
         try:
             return Points.objects.filter(team=self).latest('date').points
         except:
-            p = Points(team=self, points=1500.0, date='2012-02-27 12:00:00')
+            p = Points(team=self, points=INITIAL_POINTS, date='2012-02-27 12:00:00')
             p.save()
             return p.points
 
