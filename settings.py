@@ -155,6 +155,7 @@ INSTALLED_APPS = (
     #external
     'django_extensions',
     'easy_thumbnails',
+    'googlecharts',
 
     #Database
     'django_evolution',

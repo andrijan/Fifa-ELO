@@ -1,0 +1,25 @@
+{% extends "content.html" %}
+{% block extra_head %}
+    <script type='text/javascript' src='http://www.google.com/jsapi'></script>
+    <script type='text/javascript'>
+      google.load('visualization', '1', {'packages':['corechart']});
+      google.setOnLoadCallback(drawVisualization);
+        function drawVisualization() {
+          // Create and populate the data table.
+          var data = new google.visualization.DataTable();
+          data.addColumn('string', 'Games');
+          data.addColumn('number', '{{ team.name }}');
+          {% for points in team.points_set.all %}
+          data.addRow(["{{ forloop.counter0 }}", {{ points.points }}]);
+          {% endfor %}
+
+          // Create and draw the visualization.
+          new google.visualization.LineChart(document.getElementById('chart_div')).
+              draw(data, {width: 600, height: 400}
+                  );
+        }
+    </script>
+{% endblock extra_head %}
+{% block main %}
+    <div id='chart_div' style='width: 700px; height: 240px;'></div>
+{% endblock main %}

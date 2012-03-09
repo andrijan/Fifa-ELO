@@ -11,9 +11,34 @@ class Team(models.Model):
         try:
             return Points.objects.filter(team=self).latest('date').points
         except:
-            p = Points(team=self, points=1500.0)
+            p = Points(team=self, points=1500.0, date='2012-02-27 12:00:00')
             p.save()
             return p.points
+
+    def get_change(self):
+        current = self.get_latest_points()
+        try:
+            old = self.points_set.all().order_by('-date')[1].points
+        except:
+            return "same"
+        if current > old:
+            return "up"
+        elif current < old:
+            return "down"
+        else:
+            return "same"
+
+    def count_games(self):
+        return self.home_team.count() + self.away_team.count()
+
+    def count_wins(self):
+        return self.home_team.filter(result='1').count() + self.away_team.filter(result='2').count()
+
+    def count_draws(self):
+        return self.home_team.filter(result='X').count() + self.away_team.filter(result='X').count()
+
+    def count_losses(self):
+        return self.home_team.filter(result='2').count() + self.away_team.filter(result='1').count()
 
     def __unicode__(self):
         return u'%s' % self.name
@@ -57,7 +82,7 @@ class Game(models.Model):
 
 class Points(models.Model):
     team = models.ForeignKey(Team)
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     points = models.FloatField("Elo Points")
 
     def __unicode__(self):

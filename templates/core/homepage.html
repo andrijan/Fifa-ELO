@@ -1,5 +1,77 @@
 {% extends "content.html" %}
+{% load humanize googlecharts %}
 {% block main %}
-    <h1> Hello world!</h1>
-    <p><img src="{{STATIC_URL}}img/world.jpg" alt="world" /></p>
+<div class="span5">
+<table class="table table-striped">
+    <tr>
+        <th>#</th>
+        <th>Lið</th>
+        <th>Stig</th>
+        <th>Leikir</th>
+        <th>Sigrar</th>
+        <th>Jafntefli</th>
+        <th>Töp</th>
+        <th>Breyting</th>
+    </tr>
+    {% for team in teams %}
+    <tr>
+        <td>{{ forloop.counter }}</td>
+        <td><a href="{% url view-team team.pk %}">{{ team.name }}</a></td>
+        <td>{{ team.get_latest_points|floatformat:"0"|intcomma }}</td>
+        <td>{{ team.count_games }}</td>
+        <td>{{ team.count_wins }}</td>
+        <td>{{ team.count_draws }}</td>
+        <td>{{ team.count_losses }}</td>
+        <td><img src="{% ifequal team.get_change "down" %}http://www.brisskmall.com/images/down_arrow.png{% else %}{% ifequal team.get_change "up" %}http://www.brisskmall.com/images/Arrow-Up.png{% else %}http://mediatapper.com/wp-content/uploads/2011/09/blue-arrow-in-front-right-side-icone-8631-64.png{% endifequal %}{% endifequal %}" /></td>
+    </tr>
+    {% endfor %}
+</table>
+</div>
+<div class="span5">
+<table class="table table-striped">
+    <tr>
+        <th>#</th>
+        <th>Lið</th>
+        <th>Stig</th>
+        <th>Leikir</th>
+        <th>Sigrar</th>
+        <th>Jafntefli</th>
+        <th>Töp</th>
+        <th>Breyting</th>
+    </tr>
+    {% for team in players %}
+    <tr>
+        <td>{{ forloop.counter }}</td>
+        <td><a href="{% url view-team team.pk %}">{{ team.name }}</a></td>
+        <td>{{ team.get_latest_points|floatformat:"0"|intcomma }}</td>
+        <td>{{ team.count_games }}</td>
+        <td>{{ team.count_wins }}</td>
+        <td>{{ team.count_draws }}</td>
+        <td>{{ team.count_losses }}</td>
+        <td><img src="{% ifequal team.get_change "down" %}http://www.brisskmall.com/images/down_arrow.png{% else %}{% ifequal team.get_change "up" %}http://www.brisskmall.com/images/Arrow-Up.png{% else %}http://mediatapper.com/wp-content/uploads/2011/09/blue-arrow-in-front-right-side-icone-8631-64.png{% endifequal %}{% endifequal %}" /></td>
+    </tr>
+    {% endfor %}
+</table>
+</div>
+{% comment %}
+<div id="out"></div>
+{% googlecharts %}
+    {# named data and options can be reused #}
+    {% data values "out_data" %}
+        {% col "string" "Name" %}"{{ val }}"{% endcol %}
+        {% col "number" "Value" %}{{ val }}{% endcol %}
+    {% enddata %}
+    {# you can also use global javascript variables here, #}
+    {# and call functions #}
+    {% options "out_options" %}
+        kind: "PieChart",
+        options: {
+            width: 300,
+            height: 240
+        }
+    {% endoptions %}
+    {# chart is assembled from container, data and options #}
+    {% graph "out" "out_data" "out_options" %}
+{% endgooglecharts %}
+{% endcomment %}
 {% endblock %}
