@@ -1,10 +1,23 @@
 from django.db import models
+from django.db.models import Q
+from datetime import datetime, time
 
 MAX = 32
 INITIAL_POINTS = 1500.0
 
+class Player(models.Model):
+    name = models.CharField("Team name", max_length=255, blank=True, null=True)
+
+    def list_games(self):
+        games = Game.objects.filter(Q(home_team__players__in=[self]) | Q(away_team__players__in=[self])).order_by('-date').distinct()
+        return games
+
+    def __unicode__(self):
+        return u'%s' % self.name
+
 class Team(models.Model):
     name = models.CharField("Team name", max_length=255, blank=True, null=True)
+    players = models.ManyToManyField(Player)
     is_team = models.BooleanField()
 
     def get_latest_points(self):
@@ -14,6 +27,10 @@ class Team(models.Model):
             p = Points(team=self, points=INITIAL_POINTS, date='2012-02-27 12:00:00')
             p.save()
             return p.points
+
+    def get_points_by_date(self, date):
+        points = self.points_set.filter(game__date__lte=datetime.combine(date, time.max)).order_by('-game__date')
+        return points[0]
 
     def get_change(self):
         current = self.get_latest_points()
@@ -40,8 +57,16 @@ class Team(models.Model):
     def count_losses(self):
         return self.home_team.filter(result='2').count() + self.away_team.filter(result='1').count()
 
+    def list_games(self):
+        games = Game.objects.filter(Q(home_team=self) | Q(away_team=self)).order_by('-date')
+        return games
+
     def __unicode__(self):
-        return u'%s' % self.name
+        if self.name:
+            return u'%s' % self.name
+        else:
+            s = ' og '.join(player.name for player in self.players.all())
+            return u'%s' % (s)
 
 RESULT_CHOICES = (
     ('1', '1'),
@@ -74,11 +99,15 @@ class Game(models.Model):
             e2 = 1/(1+10**((p1-p2)/400))
             p1new = p1+32*(result-e1)
             p2new = p2+32*(1-result-e2)
-            np1 = Points(team=self.home_team,points=p1new, game=self)
+            np1 = Points(team=self.home_team,points=p1new)
             np1.save()
-            np2 = Points(team=self.away_team,points=p2new, game=self)
+            np2 = Points(team=self.away_team,points=p2new)
             np2.save()
         super(Game, self).save(*args, **kwargs)
+        np1.game = self
+        np1.save()
+        np2.game = self
+        np2.save()
 
 class Points(models.Model):
     team = models.ForeignKey(Team)

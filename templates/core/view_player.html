@@ -35,16 +35,18 @@
             <thead>
                 <tr>
                     <th>Dagsetning</th>
+                    <th>Lið</th>
                     <th>Mótherji</th>
                     <th>Úrslit</th>
                 </tr>
             </thead>
             <tbody>
-                {% for game in team.list_games %}
+                {% for game in player.list_games %}
                 <tr>
                     <td>{{ game.date }}</td>
-                    <td>{% ifequal game.home_team team %}<a href="{% url view-team game.away_team.pk %}">{{ game.away_team }}</a>{% else %}<a href="{% url view-team game.home_team.pk %}">{{ game.home_team }}</a>{% endifequal %}</td>
-                    <td>{% ifequal game.home_team team %}{{ game.home_score }} - {{ game.away_score }}{% else %}{{ game.away_score }} - {{ game.home_score }}{% endifequal %}</td>
+                    <td>{% if player in game.home_team.players.all %}<a href="{% url view-team game.home_team.pk %}">{{ game.home_team }}</a>{% else %}<a href="{% url view-team game.away_team.pk %}">{{ game.away_team }}</a>{% endif %}</td>
+                    <td>{% if player in game.home_team.players.all %}<a href="{% url view-team game.away_team.pk %}">{{ game.away_team }}</a>{% else %}<a href="{% url view-team game.home_team.pk %}">{{ game.home_team }}</a>{% endif %}</td>
+                    <td>{% if player in game.home_team.players.all %}{{ game.home_score }} - {{ game.away_score }}{% else %}{{ game.away_score }} - {{ game.home_score }}{% endif %}</td>
                 </tr>
                 {% endfor %}
             </tbody>

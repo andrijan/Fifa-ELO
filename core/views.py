@@ -6,7 +6,7 @@ from django.template import RequestContext
 
 import json
 
-from models import Team, Points
+from models import Team, Points, Player
 
 def score(request):
     teams = Team.objects.all()
@@ -26,6 +26,18 @@ def view_team(request, team_id):
     team = Team.objects.get(pk=team_id)
     return render_to_response('core/view_team.html', {'team': team},
                               context_instance=RequestContext(request))
+
+def view_player(request, player_id):
+    player = Player.objects.get(pk=player_id)
+    team = Team.objects.get(name=player.name)
+    return render_to_response('core/view_player.html', {'player': player, 'team': team},
+                              context_instance=RequestContext(request))
+
+"""
+def all_teams(request):
+    teams = Team.objects.all()
+    dates = Points.objects.all().dates('game__date', 'day')
+"""
 
 def home(request):
     teams = Team.objects.filter(is_team=True)

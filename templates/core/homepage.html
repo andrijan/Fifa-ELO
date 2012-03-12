@@ -42,7 +42,7 @@
     {% for team in players %}
     <tr>
         <td>{{ forloop.counter }}</td>
-        <td><a href="{% url view-team team.pk %}">{{ team.name }}</a></td>
+        <td><a href="{% url view-player team.players.all.0.pk %}">{{ team.name }}</a></td>
         <td>{{ team.get_latest_points|floatformat:"0"|intcomma }}</td>
         <td>{{ team.count_games }}</td>
         <td>{{ team.count_wins }}</td>
