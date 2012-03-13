@@ -53,11 +53,12 @@ def achievements(request):
     games = Game.objects.all()
     bw = 0
     winner = None
+    sorted_games = sorted(games, key=lambda g: abs(g.home_score - g.away_score), reverse=True) 
     for game in games:
         if abs(game.home_score - game.away_score) > bw:
             bw = abs(game.home_score - game.away_score)
             winner = game
-    ctx = {'winner': winner}
+    ctx = {'winner': winner, 'games': sorted_games[0:3]}
     return render_to_response('core/achievements.html', ctx,
                               context_instance=RequestContext(request))
 

@@ -4,7 +4,7 @@ urlpatterns = patterns('',
     url(r'^$', home, name='home'),
     url(r'^score/$', score, name='score'),
     url(r'^achievements/$', achievements, name='achievements'),
-    url(r'^all_teams/$', all_teams, name='all_teams'),
+    url(r'^all_teams/$', all_teams, name='all-teams'),
     url(r'^view_team/(?P<team_id>\d+)/$', view_team, name='view-team'),
     url(r'^view_player/(?P<player_id>\d+)/$', view_player, name='view-player'),
 )

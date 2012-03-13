@@ -1,4 +1,9 @@
 {% extends "content.html" %}
 {% block main %}
-{{ winner.home_team }} {{ winner.home_score }} - {{ winner.away_score }} {{ winner.away_team }}
+<h1>Stærstu sigrar</h1>
+<div class="well">
+{% for game in games %}
+{{ game.home_team }} {{ game.home_score }} - {{ game.away_score }} {{ game.away_team }}<br />
+{% endfor %}
+</div>
 {% endblock main %}
