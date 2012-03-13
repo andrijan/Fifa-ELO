@@ -12,7 +12,6 @@
           data.addColumn('number', '{{ team.name }}');
           data.addRows({{ team.points_set.all.count }});
           {% for points in team.points_set.all %}
-          console.log({{ forloop.counter0 }});
           data.setValue({{ forloop.counter0 }}, 0, "{{ points.game.home_team.name }} {{ points.game.home_score }} - {{points.game.away_score}} {{ points.game.away_team.name }}");
           data.setValue({{ forloop.counter0 }}, 1, {{ points.points }});
           {% endfor %}

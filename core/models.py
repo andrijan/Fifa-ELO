@@ -51,7 +51,10 @@ class Team(models.Model):
 
     def get_points_by_date(self, date):
         points = self.points_set.filter(game__date__lte=datetime.combine(date, time.max)).order_by('-game__date')
-        return points[0]
+        try:
+            return points[0]
+        except IndexError:
+            return Points.objects.filter(team=self)[0]
 
     def get_change(self):
         current = self.get_latest_points()

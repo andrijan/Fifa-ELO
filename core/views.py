@@ -6,7 +6,7 @@ from django.template import RequestContext
 
 import json
 
-from models import Team, Points, Player
+from models import Team, Points, Player, Game
 
 def score(request):
     teams = Team.objects.all()
@@ -33,11 +33,34 @@ def view_player(request, player_id):
     return render_to_response('core/view_player.html', {'player': player, 'team': team},
                               context_instance=RequestContext(request))
 
-"""
 def all_teams(request):
-    teams = Team.objects.all()
+    is_team = request.GET.get('is_team', False)
+    teams = Team.objects.filter(is_team=is_team)
     dates = Points.objects.all().dates('game__date', 'day')
-"""
+    points = []
+    for date in dates:
+        current_date = {'date': date}
+        current_teams = []
+        for team in teams:
+            current_teams.append([team, team.get_points_by_date(date).points])
+        current_date['teams'] = current_teams
+        points.append(current_date)
+    ctx = {'teams': teams, 'dates': dates, 'points': points}
+    return render_to_response('core/all_teams.html', ctx,
+                                context_instance=RequestContext(request))
+
+def achievements(request):
+    games = Game.objects.all()
+    bw = 0
+    winner = None
+    for game in games:
+        if abs(game.home_score - game.away_score) > bw:
+            bw = abs(game.home_score - game.away_score)
+            winner = game
+    ctx = {'winner': winner}
+    return render_to_response('core/achievements.html', ctx,
+                              context_instance=RequestContext(request))
+
 
 def home(request):
     teams = Team.objects.filter(is_team=True)

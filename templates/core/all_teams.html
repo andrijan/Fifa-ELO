@@ -1,0 +1,58 @@
+{% extends "content.html" %}
+{% load humanize %}
+{% block extra_head %}
+    <script type='text/javascript' src='http://www.google.com/jsapi'></script>
+    <script type='text/javascript'>
+      google.load('visualization', '1', {'packages':['corechart']});
+      google.setOnLoadCallback(drawVisualization);
+        function drawVisualization() {
+          // Create and populate the data table.
+          var data = new google.visualization.DataTable();
+          {% for dict in points %}
+          {% if forloop.first %}
+          {% for value in dict.items %}
+          {% ifequal value.0 "date" %}
+          data.addColumn('string', 'date');
+          {% else %}
+          {% for team in value.1 %}
+          data.addColumn('number', '{{ team.0.name }}');
+          {% endfor %}
+          {% endifequal %}
+          {% endfor %}
+          {% endif %}
+          data.addRow([{% for value in dict.items %}{% ifequal value.0 "date" %}'{{ value.1|date }}',{% else %}{% for team in value.1 %}{{ team.1|floatformat:"0" }}{% if not forloop.last %},{% endif %}{% endfor %}{% endifequal %}{% endfor %}]);
+          {% endfor %}
+
+          // Create and draw the visualization.
+          new google.visualization.LineChart(document.getElementById('chart_div')).
+              draw(data, {width: 800, height: 800});
+        }
+    </script>
+{% endblock extra_head %}
+{% block main %}
+<div class="row">
+    <div class="span6">
+        <div id='chart_div' style='width: 700px; height: 240px;'></div>
+        {% comment %}
+        {% for dict in points %}
+        {% for value in dict.items %}
+        {% ifequal value.0 "date" %}
+        {{ value.1 }}<br />
+        {% else %}
+        {% for team in value.1 %}
+        {{ team.1|floatformat:"2" }}<br />
+        {% endfor %}
+        {% endifequal %}
+        {% endfor %}
+        {% endfor %}
+        {{ points }}
+        {% for pDate, teams in points %}
+        <h3>{{pDate}}</h3>
+        {% for team in teams %}
+        {{ team }}, 
+        {% endfor %}
+        {% endfor %}
+        {% endcomment %}
+    </div>
+</div>
+{% endblock main %}
