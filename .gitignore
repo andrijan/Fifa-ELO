@@ -1,3 +1,4 @@
 *.wpr
 *.db
 *.pyc
+.idea
