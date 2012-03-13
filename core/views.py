@@ -42,9 +42,11 @@ def all_teams(request):
 def home(request):
     teams = Team.objects.filter(is_team=True)
     players = Team.objects.filter(is_team=False)
+    combined = Player.objects.all()
     teams = sorted(teams, key=lambda t: t.get_latest_points(), reverse=True)
     players = sorted(players, key=lambda t: t.get_latest_points(), reverse=True)
+    combined = sorted(combined, key=lambda p: p.win_loss_ratio(), reverse=True)
     points = Points.objects.all()
-    ctx = {'teams': teams, 'players': players, 'points': points}
+    ctx = {'teams': teams, 'players': players, 'points': points, 'combined': combined}
     return render_to_response('core/homepage.html', ctx,
                               context_instance=RequestContext(request))

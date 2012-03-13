@@ -38,6 +38,7 @@
                     <th>Lið</th>
                     <th>Mótherji</th>
                     <th>Úrslit</th>
+                    <th>Breyting</th>
                 </tr>
             </thead>
             <tbody>
@@ -47,6 +48,7 @@
                     <td>{% if player in game.home_team.players.all %}<a href="{% url view-team game.home_team.pk %}">{{ game.home_team }}</a>{% else %}<a href="{% url view-team game.away_team.pk %}">{{ game.away_team }}</a>{% endif %}</td>
                     <td>{% if player in game.home_team.players.all %}<a href="{% url view-team game.away_team.pk %}">{{ game.away_team }}</a>{% else %}<a href="{% url view-team game.home_team.pk %}">{{ game.home_team }}</a>{% endif %}</td>
                     <td>{% if player in game.home_team.players.all %}{{ game.home_score }} - {{ game.away_score }}{% else %}{{ game.away_score }} - {{ game.home_score }}{% endif %}</td>
+                    <td>{% if player in game.home_team.players.all %}{{ game.points_set.all.0.get_change|floatformat:2 }}{% else %}{{ game.points_set.all.1.get_change|floatformat:2 }}{% endif %}</td>
                 </tr>
                 {% endfor %}
             </tbody>

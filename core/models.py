@@ -12,6 +12,27 @@ class Player(models.Model):
         games = Game.objects.filter(Q(home_team__players__in=[self]) | Q(away_team__players__in=[self])).order_by('-date').distinct()
         return games
 
+    def count_games(self):
+        return Game.objects.filter(Q(home_team__players=self) | Q(away_team__players=self)).order_by('-date').distinct().count()
+
+    def count_wins(self):
+        return Game.objects.filter(Q(home_team__players__in=[self], result='1') | Q(away_team__players__in=[self], result='2')).order_by('-date').distinct().count()
+
+    def count_draws(self):
+        return Game.objects.filter(Q(home_team__players__in=[self], result='X') | Q(away_team__players__in=[self], result='X')).order_by('-date').distinct().count()
+
+    def count_losses(self):
+        return Game.objects.filter(Q(home_team__players__in=[self], result='2') | Q(away_team__players__in=[self], result='1')).order_by('-date').distinct().count()
+
+    def win_loss_ratio(self):
+        try:
+            return (self.count_wins()+self.count_draws()/2.0) / float(self.count_games())
+        except:
+            return 0.5
+
+    def win_loss_ratio_percentage(self):
+        return self.win_loss_ratio() * 100.0
+
     def __unicode__(self):
         return u'%s' % self.name
 
@@ -112,8 +133,11 @@ class Game(models.Model):
 class Points(models.Model):
     team = models.ForeignKey(Team)
     date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-    points = models.FloatField("Elo Points")
+    points = models.FloatField("Elo stig")
     game = models.ForeignKey(Game, null=True, blank=True)
+
+    def get_change(self):
+        return self.points - Points.objects.filter(team=self.team).filter(date__lt=self.date).order_by('-date')[0].points
 
     def __unicode__(self):
         return u'%s: %s - %s' % (self.date, self.team, self.points)

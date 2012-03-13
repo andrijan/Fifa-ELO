@@ -1,7 +1,8 @@
 {% extends "content.html" %}
 {% load humanize googlecharts %}
 {% block main %}
-<div class="span5">
+<div class="row">
+<div class="span6">
 <table class="table table-striped">
     <tr>
         <th>#</th>
@@ -27,7 +28,7 @@
     {% endfor %}
 </table>
 </div>
-<div class="span5">
+<div class="span6">
 <table class="table table-striped">
     <tr>
         <th>#</th>
@@ -52,6 +53,29 @@
     </tr>
     {% endfor %}
 </table>
+<table class="table table-striped">
+    <tr>
+        <th>#</th>
+        <th>Lið</th>
+        <th>Leikir</th>
+        <th>Sigrar</th>
+        <th>Jafntefli</th>
+        <th>Töp</th>
+        <th>Ratio</th>
+    </tr>
+    {% for team in combined %}
+    <tr>
+        <td>{{ forloop.counter }}</td>
+        <td><a href="{% url view-player team.pk %}">{{ team.name }}</a></td>
+        <td>{{ team.count_games }}</td>
+        <td>{{ team.count_wins }}</td>
+        <td>{{ team.count_draws }}</td>
+        <td>{{ team.count_losses }}</td>
+        <td>{{ team.win_loss_ratio_percentage|floatformat:2 }} %</td>
+    </tr>
+    {% endfor %}
+</table>
+</div>
 </div>
 {% comment %}
 <div id="out"></div>
