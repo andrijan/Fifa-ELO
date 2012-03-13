@@ -45,6 +45,7 @@ def home(request):
     teams = sorted(teams, key=lambda t: t.get_latest_points(), reverse=True)
     players = sorted(players, key=lambda t: t.get_latest_points(), reverse=True)
     points = Points.objects.all()
-    ctx = {'teams': teams, 'players': players, 'points': points}
+    last_change = Team.get_score_change()
+    ctx = {'teams': teams, 'players': players, 'points': points, 'score_change': last_change}
     return render_to_response('core/homepage.html', ctx,
                               context_instance=RequestContext(request))

@@ -45,6 +45,14 @@ class Team(models.Model):
         else:
             return "same"
 
+    def get_score_change(self):
+        current = self.get_latest_points()
+        try:
+            old = self.points_set.all().order_by('-date')[1].points
+        except:
+            return 0.0
+        return current - old
+
     def count_games(self):
         return self.home_team.count() + self.away_team.count()
 
