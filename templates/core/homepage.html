@@ -46,7 +46,7 @@
     {% for team in players %}
     <tr>
         <td>{{ forloop.counter }}</td>
-        <td><a href="{% url view-player team.players.all.0.pk %}">{{ team.name }}</a>{% for a in team.achievement_set.all %}<img title="{{ a.name }}" src="{% url media "uploaded/" %}{{ a.icon }}" />{% endfor %}</td>
+        <td><a href="{% url view-player team.players.all.0.pk %}">{{ team.name }}</a>{% for a in team.achievement_set.all %}<img title="{{ a.name }}" src="{{ MEDIA_URL }}/{{ a.icon }}" />{% endfor %}</td>
         <td>{{ team.get_latest_points|floatformat:"0"|intcomma }}</td>
         <td>{{ team.count_games }}</td>
         <td>{{ team.count_wins }}</td>
