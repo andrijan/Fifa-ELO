@@ -3,6 +3,7 @@
 import posixpath
 
 from path import path
+import os
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'x4$@%buj5c@g6@m(fzhtsv+2z9z88(a0a6_p__yjd)nimv#a)l'
@@ -12,6 +13,7 @@ TEMPLATE_DEBUG = DEBUG
 SERVE_MEDIA = DEBUG
 
 PROJECT_ROOT = path(__file__).abspath().realpath().dirname()
+ROOT_PATH = os.path.normpath(os.path.dirname(__file__))
 
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
@@ -70,11 +72,11 @@ MEDIA_ROOT = PROJECT_ROOT / 'assets' / 'uploaded' / '' # ensure trailing slash
 
 # Absolute path to the directory that holds static files like app media.
 # Example: "/home/media/media.lawrence.com/apps/"
-STATIC_ROOT = PROJECT_ROOT / "assets" / "static" / '' # ensure trailing slash
+STATIC_ROOT = ROOT_PATH + "/static" + '/' # ensure trailing slash
 
 # Additional directories which hold static files
 STATICFILES_DIRS = [
-    PROJECT_ROOT / "assets",
+    ROOT_PATH + "/assets/static",
 ]
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a

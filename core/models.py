@@ -41,6 +41,9 @@ class Team(models.Model):
     players = models.ManyToManyField(Player)
     is_team = models.BooleanField()
 
+    def check_achievemnts(self, game=None, team=None):
+        pass
+
     def get_latest_points(self):
         try:
             return Points.objects.filter(team=self).latest('date').points
@@ -117,6 +120,36 @@ class Game(models.Model):
     def __unicode__(self):
         return u'%s: %s - %s' % (self.date, self.home_team, self.away_team)
 
+    def check_achievemnts(self, team=None):
+        def biggest_win(self):
+            biggest_win = Achievement.objects.get(name="Biggest win")
+            if self.home_score - self.away_score > biggest_win.points:
+                biggest_win.game.clear()
+                biggest_win.game.add(self)
+                biggest_win.team.clear()
+                biggest_win.team.add(self.home_team)
+                biggest_win.points = self.home_score - self.away_score
+                biggest_win.save()
+            elif self.away_score - self.home_score > biggest_win.points:
+                biggest_win.game.clear()
+                biggest_win.game.add(self)
+                biggest_win.team.clear()
+                biggest_win.team.add(self.away_team)
+                biggest_win.points = self.away_score - self.home_score
+                biggest_win.save()
+            elif self.home_score - self.away_score == biggest_win.points:
+                biggest_win.game.add(self)
+                biggest_win.team.add(self.home_team)
+                biggest_win.points = self.home_score - self.away_score
+                biggest_win.save()
+            elif self.away_score - self.home_score == biggest_win.points:
+                biggest_win.game.add(self)
+                biggest_win.team.add(self.away_team)
+                biggest_win.points = self.away_score - self.home_score
+                biggest_win.save()
+
+        biggest_win(self)
+
     def save(self, *args, **kwargs):
         if not self.pk:
             if self.result == '1':
@@ -135,11 +168,31 @@ class Game(models.Model):
             np1.save()
             np2 = Points(team=self.away_team,points=p2new)
             np2.save()
+
         super(Game, self).save(*args, **kwargs)
-        np1.game = self
-        np1.save()
-        np2.game = self
-        np2.save()
+        self.check_achievemnts()
+        self.home_team.check_achievemnts()
+        self.away_team.check_achievemnts()
+        try:
+            np1.game = self
+            np1.save()
+        except:
+            pass
+        try:
+            np2.game = self
+            np2.save()
+        except:
+            pass
+
+class Achievement(models.Model):
+    team = models.ManyToManyField(Team)
+    game = models.ManyToManyField(Game, blank=True, null=True)
+    points = models.FloatField(blank=True, null=True)
+    name = models.CharField("Achievement name", max_length=255, blank=True, null=True)
+    icon = models.ImageField(upload_to="achievements")
+
+    def __unicode__(self):
+        return u'%s' % (self.name)
 
 class Points(models.Model):
     team = models.ForeignKey(Team)
