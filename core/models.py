@@ -105,6 +105,13 @@ class Team(models.Model):
             goals += game.away_score
         return goals/float(self.count_games())
 
+    def average_goals_conceded_per_game(self):
+        goals = 0
+        for game in self.home_team.all():
+            goals += game.away_score
+        for game in self.away_team.all():
+            goals += game.home_score
+        return goals/float(self.count_games())
 
     def __unicode__(self):
         if self.name:
