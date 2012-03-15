@@ -133,7 +133,8 @@ class Game(models.Model):
 
     def check_achievemnts(self, team=None):
         for a in Achievement.objects.all():
-            code = compile(a.predicate, '<string>', 'exec')
+            pred = a.predicate.replace('\r','')
+            code = compile(pred, '<string>', 'exec')
             ns = {}
             exec code in ns
             changed, game, team, new_points = ns['match'](self, a.points)
