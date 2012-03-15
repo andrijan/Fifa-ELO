@@ -97,6 +97,15 @@ class Team(models.Model):
         games = Game.objects.filter(Q(home_team=self) | Q(away_team=self)).order_by('-date')
         return games
 
+    def averate_goals_per_game(self):
+        goals = 0
+        for game in self.home_team.all():
+            goals += game.home_score
+        for game in self.away_team.all():
+            goals += game.away_score
+        return goals/float(self.count_games())
+
+
     def __unicode__(self):
         if self.name:
             return u'%s' % self.name
