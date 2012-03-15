@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import Q
 from datetime import datetime, time
+from compiler import compile
 
 MAX = 32
 INITIAL_POINTS = 1500.0
@@ -123,12 +124,19 @@ class Game(models.Model):
     def display_score(self):
         return u'%s - %s' % (self.home_score, self.away_score)
 
+    def winner(self):
+        if self.result == "1":
+            return self.home_team
+        elif self.result == "2":
+            return self.away_team
+        return None
+
     def check_achievemnts(self, team=None):
-        pass
-        """
         for a in Achievement.objects.all():
-            match = eval(a.predicate)
-            changed, game, team, new_points = match(self, a.points)
+            code = compile(a.predicate, '<string>', 'exec')
+            ns = {}
+            exec code in ns
+            changed, game, team, new_points = ns['match'](self, a.points)
             if changed:
                 if new_points > a.points:
                     a.team.clear()
@@ -137,7 +145,6 @@ class Game(models.Model):
                 a.team.add(team)
                 a.game.add(game)
                 a.save()
-        """
 
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -160,8 +167,6 @@ class Game(models.Model):
 
         super(Game, self).save(*args, **kwargs)
         self.check_achievemnts()
-        self.home_team.check_achievemnts()
-        self.away_team.check_achievemnts()
         try:
             np1.game = self
             np1.save()
@@ -174,12 +179,12 @@ class Game(models.Model):
             pass
 
 class Achievement(models.Model):
-    team = models.ManyToManyField(Team)
+    team = models.ManyToManyField(Team, blank=True, null=True)
     game = models.ManyToManyField(Game, blank=True, null=True)
     points = models.FloatField(blank=True, null=True)
     name = models.CharField("Achievement name", max_length=255, blank=True, null=True)
     icon = models.ImageField(upload_to="achievements")
-    #predicate = models.TextField(null=True, blank=True)
+    predicate = models.TextField(null=True, blank=True)
 
     def __unicode__(self):
         return u'%s' % (self.name)
