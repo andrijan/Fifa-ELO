@@ -115,9 +115,9 @@ class Team(models.Model):
         streak = 0
         current_streak = 0
         for game in self.list_games():
-            if game.home_team == self and game.result == "1":
+            if game.home_team == self and game.result == "2":
                 current_streak += 1
-            elif game.away_team == self and game.result =="2":
+            elif game.away_team == self and game.result =="1":
                 current_streak += 1
             else:
                 current_streak = 0
