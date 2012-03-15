@@ -2,7 +2,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 import json
 
@@ -50,7 +50,18 @@ def all_teams(request):
                                 context_instance=RequestContext(request))
 
 def all_games(request):
-    games = Game.objects.all().order_by('-date')
+    game_list = Game.objects.all().order_by('-date')
+    paginator = Paginator(game_list, 15) # Show 15 games per page
+
+    page = request.GET.get('page', 1)
+
+    try:
+        games = paginator.page(page)
+    except PageNotAnInteger:
+        games = paginator.page(1)
+    except EmptyPage:
+        games = paginator.page(paginator.num_pages)
+
     ctx = {'games': games}
     return render_to_response('core/all_games.html', ctx,
                                 context_instance=RequestContext(request))
