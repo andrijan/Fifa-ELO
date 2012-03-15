@@ -100,7 +100,7 @@ class Team(models.Model):
     def longest_win_streak(self):
         streak = 0
         current_streak = 0
-        for game in self.games():
+        for game in self.list_games():
             if game.home_team == self and game.result == "1":
                 current_streak += 1
             elif game.away_team == self and game.result =="2":
@@ -114,7 +114,7 @@ class Team(models.Model):
     def longest_losing_streak(self):
         streak = 0
         current_streak = 0
-        for game in self.games():
+        for game in self.list_games():
             if game.home_team == self and game.result == "1":
                 current_streak += 1
             elif game.away_team == self and game.result =="2":
