@@ -176,7 +176,6 @@ class Game(models.Model):
             np2.save()
 
         super(Game, self).save(*args, **kwargs)
-        self.check_achievements()
         try:
             np1.game = self
             np1.save()
@@ -187,6 +186,7 @@ class Game(models.Model):
             np2.save()
         except:
             pass
+        self.check_achievements()
 
 class Achievement(models.Model):
     team = models.ManyToManyField(Team, blank=True, null=True)
