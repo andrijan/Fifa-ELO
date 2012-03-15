@@ -49,6 +49,13 @@ def all_teams(request):
     return render_to_response('core/all_teams.html', ctx,
                                 context_instance=RequestContext(request))
 
+def all_games(request):
+    games = Game.objects.all().order_by('-date')
+    ctx = {'games': games}
+    return render_to_response('core/all_games.html', ctx,
+                                context_instance=RequestContext(request))
+
+
 def achievements(request):
     games = Game.objects.all()
     bw = 0

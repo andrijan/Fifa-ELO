@@ -120,35 +120,24 @@ class Game(models.Model):
     def __unicode__(self):
         return u'%s: %s - %s' % (self.date, self.home_team, self.away_team)
 
-    def check_achievemnts(self, team=None):
-        def biggest_win(self):
-            biggest_win = Achievement.objects.get(name="Biggest win")
-            if self.home_score - self.away_score > biggest_win.points:
-                biggest_win.game.clear()
-                biggest_win.game.add(self)
-                biggest_win.team.clear()
-                biggest_win.team.add(self.home_team)
-                biggest_win.points = self.home_score - self.away_score
-                biggest_win.save()
-            elif self.away_score - self.home_score > biggest_win.points:
-                biggest_win.game.clear()
-                biggest_win.game.add(self)
-                biggest_win.team.clear()
-                biggest_win.team.add(self.away_team)
-                biggest_win.points = self.away_score - self.home_score
-                biggest_win.save()
-            elif self.home_score - self.away_score == biggest_win.points:
-                biggest_win.game.add(self)
-                biggest_win.team.add(self.home_team)
-                biggest_win.points = self.home_score - self.away_score
-                biggest_win.save()
-            elif self.away_score - self.home_score == biggest_win.points:
-                biggest_win.game.add(self)
-                biggest_win.team.add(self.away_team)
-                biggest_win.points = self.away_score - self.home_score
-                biggest_win.save()
+    def display_score(self):
+        return u'%s - %s' % (self.home_score, self.away_score)
 
-        biggest_win(self)
+    def check_achievemnts(self, team=None):
+        pass
+        """
+        for a in Achievement.objects.all():
+            match = eval(a.predicate)
+            changed, game, team, new_points = match(self, a.points)
+            if changed:
+                if new_points > a.points:
+                    a.team.clear()
+                    a.game.clear()
+                    a.points = new_points
+                a.team.add(team)
+                a.game.add(game)
+                a.save()
+        """
 
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -190,6 +179,7 @@ class Achievement(models.Model):
     points = models.FloatField(blank=True, null=True)
     name = models.CharField("Achievement name", max_length=255, blank=True, null=True)
     icon = models.ImageField(upload_to="achievements")
+    #predicate = models.TextField(null=True, blank=True)
 
     def __unicode__(self):
         return u'%s' % (self.name)

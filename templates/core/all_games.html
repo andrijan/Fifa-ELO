@@ -1,0 +1,23 @@
+{% extends "content.html" %}
+{% block main %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Dagsetning</th>
+            <th>Heimalið</th>
+            <th>Útilið</th>
+            <th>Úrslit</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for game in games %}
+        <tr>
+            <td>{{ game.date|date }}</td>
+            <td><a href="{% url view-team game.home_team.pk %}">{{ game.home_team }}</a></td>
+            <td><a href="{% url view-team game.away_team.pk %}">{{ game.away_team }}</a></td>
+            <td>{{ game.display_score }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock main %}
