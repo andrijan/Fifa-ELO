@@ -97,6 +97,34 @@ class Team(models.Model):
         games = Game.objects.filter(Q(home_team=self) | Q(away_team=self)).order_by('-date')
         return games
 
+    def longest_win_streak(self):
+        streak = 0
+        current_streak = 0
+        for game in self.games():
+            if game.home_team == self and game.result == "1":
+                current_streak += 1
+            elif game.away_team == self and game.result =="2":
+                current_streak += 1
+            else:
+                current_streak = 0
+            if current_streak > streak:
+                streak = current_streak
+        return streak
+
+    def longest_losing_streak(self):
+        streak = 0
+        current_streak = 0
+        for game in self.games():
+            if game.home_team == self and game.result == "1":
+                current_streak += 1
+            elif game.away_team == self and game.result =="2":
+                current_streak += 1
+            else:
+                current_streak = 0
+            if current_streak > streak:
+                streak = current_streak
+        return streak
+
     def average_goals_per_game(self):
         goals = 0
         for game in self.home_team.all():
