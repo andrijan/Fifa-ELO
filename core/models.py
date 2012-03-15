@@ -42,7 +42,7 @@ class Team(models.Model):
     players = models.ManyToManyField(Player)
     is_team = models.BooleanField()
 
-    def check_achievemnts(self, game=None, team=None):
+    def check_achievements(self, game=None, team=None):
         pass
 
     def get_latest_points(self):
@@ -131,7 +131,7 @@ class Game(models.Model):
             return self.away_team
         return None
 
-    def check_achievemnts(self, team=None):
+    def check_achievements(self, team=None):
         for a in Achievement.objects.all():
             pred = a.predicate.replace('\r','')
             code = compile(pred, '<string>', 'exec')
@@ -167,7 +167,7 @@ class Game(models.Model):
             np2.save()
 
         super(Game, self).save(*args, **kwargs)
-        self.check_achievemnts()
+        self.check_achievements()
         try:
             np1.game = self
             np1.save()
