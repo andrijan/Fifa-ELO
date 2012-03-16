@@ -6,7 +6,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 import json
 
-from models import Team, Points, Player, Game
+from models import Team, Points, Player, Game, Achievement
 
 def score(request):
     teams = Team.objects.all()
@@ -68,16 +68,46 @@ def all_games(request):
 
 
 def achievements(request):
-    games = Game.objects.all()
-    bw = 0
-    winner = None
-    sorted_games = sorted(games, key=lambda g: abs(g.home_score - g.away_score), reverse=True) 
-    for game in games:
-        if abs(game.home_score - game.away_score) > bw:
-            bw = abs(game.home_score - game.away_score)
-            winner = game
-    ctx = {'winner': winner, 'games': sorted_games[0:3]}
+    achievements = Achievement.objects.all()
+    ctx = {'achievements': achievements}
     return render_to_response('core/achievements.html', ctx,
+                              context_instance=RequestContext(request))
+
+def generate_teams(request):
+    import itertools
+    players = request.GET.get('players', '')
+    players = players.split(',')
+    ps = []
+    for player in players:
+        ps.append(Player.objects.get(pk=player))
+    comb = itertools.combinations(ps,2)
+    games = itertools.combinations(comb,2)
+    valid_games = []
+    for g in games:
+        valid = True
+        team1 = g[0]
+        team2 = g[1]
+        for p in team1:
+            if p in team2:
+                valid = False
+        if valid:
+            valid_games.append(g)
+
+    total_games = None
+    teamA = None
+    teamB = None
+    for game in valid_games:
+        print game[0]
+        team1 = Team.objects.filter(players=game[0][0]).get(players=game[0][1])
+        team2 = Team.objects.filter(players=game[1][0]).get(players=game[1][1])
+        num_games = team1.count_games() + team2.count_games()
+        if not total_games or num_games < total_games:
+            total_games = num_games
+            teamA = team1
+            teamB = team2
+
+    ctx = {'team1': teamA, 'team2': teamB, 'total_games': total_games}
+    return render_to_response('core/generate_teams.html', ctx,
                               context_instance=RequestContext(request))
 
 
