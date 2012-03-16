@@ -125,6 +125,20 @@ class Team(models.Model):
                 streak = current_streak
         return streak
 
+    def longest_draw_streak(self):
+        streak = 0
+        current_streak = 0
+        for game in self.list_games():
+            if game.home_team == self and game.result == "X":
+                current_streak += 1
+            elif game.away_team == self and game.result =="X":
+                current_streak += 1
+            else:
+                current_streak = 0
+            if current_streak > streak:
+                streak = current_streak
+        return streak
+
     def average_goals_per_game(self):
         goals = 0
         for game in self.home_team.all():
