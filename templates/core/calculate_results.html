@@ -1,0 +1,30 @@
+{% extends "content.html" %}
+{% block main %}
+<table class="table">
+    <thead>
+        <tr>
+            <th></th>
+            <th>{{ team1 }} - {{ team1.get_latest_points|floatformat:0 }}</th>
+            <th>{{ team2 }} - {{ team2.get_latest_points|floatformat:0 }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Win</td>
+            <td>{{ t1win1|add:team1.get_latest_points|floatformat:0 }} (<strong>{{ t1win1|floatformat:2 }}</strong>)</td>
+            <td>{{ t2win2|add:team2.get_latest_points|floatformat:0 }} (<strong>{{ t2win2|floatformat:2 }}</strong>)</td>
+        </tr>
+        <tr>
+            <td>Draw</td> 
+            <td>{{ t1draw|add:team1.get_latest_points|floatformat:0 }} (<strong>{{ t1draw|floatformat:2 }}</strong>)</td>
+            <td>{{ t2draw|add:team2.get_latest_points|floatformat:0 }} (<strong>{{ t2draw|floatformat:2 }}</strong>)</td>
+        </tr>
+        <tr>
+            <td>Lose</td>
+            <td>{{ t1win2|add:team1.get_latest_points|floatformat:0 }} (<strong>{{ t1win2|floatformat:2 }}</strong>)</td>
+            <td>{{ t2win2|add:team2.get_latest_points|floatformat:0 }} (<strong>{{ t2win2|floatformat:2 }}</strong>)</td>
+
+        </tr>
+    </tbody>
+</table>
+{% endblock main %}

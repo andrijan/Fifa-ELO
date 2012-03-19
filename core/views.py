@@ -109,6 +109,36 @@ def generate_teams(request):
     return render_to_response('core/generate_teams.html', ctx,
                               context_instance=RequestContext(request))
 
+def calculate(points1, points2, result):
+    e1 = 1/(1+10**((points2-points1)/400))
+    e2 = 1/(1+10**((points1-points2)/400))
+    return 32*(result-e1), 32*(1-result-e2)
+
+def calculate_results(request):
+    team1 = request.GET.get('team1', '')
+    team2 = request.GET.get('team2', '')
+    team1 = Team.objects.get(pk=team1)
+    team2 = Team.objects.get(pk=team2)
+
+    p1 = team1.get_latest_points()
+    p2 = team2.get_latest_points()
+
+    t1win1, t2win1 = calculate(p1, p2, 1)
+    t1draw, t2draw = calculate(p1, p2, 0.5)
+    t1win2, t2win2 = calculate(p1, p2, 0)
+
+    ctx = { 'team1': team1,
+            'team2': team2,
+            't1win1': t1win1,
+            't2win1': t2win1,
+            't1win2': t1win2,
+            't2win2': t2win2,
+            't1draw': t1draw,
+            't2draw': t2draw
+    }
+    return render_to_response('core/calculate_results.html', ctx,
+                                context_instance=RequestContext(request))
+
 
 def home(request):
     teams = Team.objects.filter(is_team=True)
