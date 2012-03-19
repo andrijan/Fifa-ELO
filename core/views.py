@@ -151,6 +151,9 @@ def home(request):
         for player in combined:
             if player.count_games() == 0:
                 combined = combined.exclude(pk=player.pk)
+        for team in teams:
+            if team.count_games() == 0:
+                teams = teams.exclude(pk=team.pk)
     teams = sorted(teams, key=lambda t: t.get_latest_points(), reverse=True)
     players = sorted(players, key=lambda t: t.get_latest_points(), reverse=True)
     combined = sorted(combined, key=lambda p: p.win_loss_ratio(), reverse=True)
