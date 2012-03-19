@@ -9,6 +9,9 @@ INITIAL_POINTS = 1500.0
 class FifaTeam(models.Model):
     name = models.CharField("Team name", max_length=255, blank=True, null=True)
 
+    def __unicode__(self):
+        return u'%s' % self.name
+
 class Player(models.Model):
     name = models.CharField("Team name", max_length=255, blank=True, null=True)
 
