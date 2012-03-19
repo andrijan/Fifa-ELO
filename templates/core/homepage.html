@@ -1,85 +1,133 @@
 {% extends "content.html" %}
 {% load humanize googlecharts %}
+{% block extra_head %}
+<script type="text/javascript">
+    $(function() {
+            $(".team").draggable({
+                helper: function(event){
+                return $('<div class="drag-cart-item"><table></table></div>')
+                .find('table').append($(event.target).closest('tr').clone()).end().appendTo('body');
+                },
+            });
+            counter = 0;
+            $("#calculate_points").droppable({
+                drop: function(event, ui) {
+                    counter++;
+                    window['team' + counter] = function() {
+                        return ui.draggable.find(".team-id").attr('id');
+                    }
+                    if (counter == 2){
+                        window.location.href = "/calculate_results?team1=" + team1() + "&team2=" + team2();
+                    }
+                    $(this).html($(this).html() + "<br />" + ui.draggable.find(".team-name").text());
+                }
+            });
+            $(".player").draggable({
+                helper: function(event){
+                return $('<div class="drag-cart-item"><table></table></div>')
+                .find('table').append($(event.target).closest('tr').clone()).end().appendTo('body');
+                },
+            });
+            player_counter = 0;
+            $("#generate_teams").droppable({
+                drop: function(event, ui) {
+                    player_counter++;
+                    window['player' + player_counter] = function() {
+                        return ui.draggable.find(".player-id").attr('id');
+                    }
+                    if (player_counter == 4){
+                        window.location.href = "/generate_teams?players=" + player1() + ',' + player2() + ',' + player3() + ',' + player4();
+                    }
+                    $(this).html($(this).html() + "<br />" + ui.draggable.find(".player-name").text());
+                }
+            });
+    });
+</script>
+{% endblock extra_head %}
 {% block main %}
 <div class="row">
-<div class="span6">
-<table class="table table-striped">
-    <tr>
-        <th>#</th>
-        <th>Lið</th>
-        <th>Stig</th>
-        <th>Leikir</th>
-        <th>Sigrar</th>
-        <th>Jafntefli</th>
-        <th>Töp</th>
-        <th>Breyting</th>
-        <th>Stig +/-</th>
-    </tr>
-    {% for team in teams %}
-    <tr>
-        <td>{{ forloop.counter }}</td>
-        <td><a href="{% url view-team team.pk %}">{{ team.name }}</a>{% for a in team.achievement_set.all %}<img title="{{ a.name }}" src="{{ MEDIA_URL }}/{{ a.icon }}" />{% endfor %}</td>
-        <td>{{ team.get_latest_points|floatformat:"0"|intcomma }}</td>
-        <td>{{ team.count_games }}</td>
-        <td>{{ team.count_wins }}</td>
-        <td>{{ team.count_draws }}</td>
-        <td>{{ team.count_losses }}</td>
-        <td><img src="{% ifequal team.get_change "down" %}http://www.brisskmall.com/images/down_arrow.png{% else %}{% ifequal team.get_change "up" %}http://www.brisskmall.com/images/Arrow-Up.png{% else %}http://mediatapper.com/wp-content/uploads/2011/09/blue-arrow-in-front-right-side-icone-8631-64.png{% endifequal %}{% endifequal %}" /></td>
-        <td>{{ team.get_score_change|floatformat:"2" }}</td>
-    </tr>
-    {% endfor %}
-</table>
+    <div class="span6">
+        <table class="table table-striped" id="teams">
+            <tr>
+                <th>#</th>
+                <th>Lið</th>
+                <th>Stig</th>
+                <th>Leikir</th>
+                <th>Sigrar</th>
+                <th>Jafntefli</th>
+                <th>Töp</th>
+                <th>Breyting</th>
+                <th>Stig +/-</th>
+            </tr>
+            {% for team in teams %}
+            <tr class="team" id="{{ team.pk }}">
+                <td class="team-id" id="{{ team.pk }}">{{ forloop.counter }}</td>
+                <td><a class="team-name" href="{% url view-team team.pk %}">{{ team.name }}</a>{% for a in team.achievement_set.all %}<img title="{{ a.name }}" src="{{ MEDIA_URL }}/{{ a.icon }}" />{% endfor %}</td>
+                <td>{{ team.get_latest_points|floatformat:"0"|intcomma }}</td>
+                <td>{{ team.count_games }}</td>
+                <td>{{ team.count_wins }}</td>
+                <td>{{ team.count_draws }}</td>
+                <td>{{ team.count_losses }}</td>
+                <td><img src="{% ifequal team.get_change "down" %}http://www.brisskmall.com/images/down_arrow.png{% else %}{% ifequal team.get_change "up" %}http://www.brisskmall.com/images/Arrow-Up.png{% else %}http://mediatapper.com/wp-content/uploads/2011/09/blue-arrow-in-front-right-side-icone-8631-64.png{% endifequal %}{% endifequal %}" /></td>
+                <td>{{ team.get_score_change|floatformat:"2" }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div class="span6">
+        <table class="table table-striped">
+            <tr>
+                <th>#</th>
+                <th>Einstaklingur</th>
+                <th>Stig</th>
+                <th>Leikir</th>
+                <th>Sigrar</th>
+                <th>Jafntefli</th>
+                <th>Töp</th>
+                <th>Breyting</th>
+                <th>Stig +/-</th>
+            </tr>
+            {% for team in players %}
+            <tr class="team">
+                <td class="team-id" id="{{ team.pk }}">{{ forloop.counter }}</td>
+                <td><a class="team-name" href="{% url view-team team.pk %}">{{ team.name }}</a>{% for a in team.achievement_set.all %}<img title="{{ a.name }}" src="{{ MEDIA_URL }}/{{ a.icon }}" />{% endfor %}</td>
+                <td>{{ team.get_latest_points|floatformat:"0"|intcomma }}</td>
+                <td>{{ team.count_games }}</td>
+                <td>{{ team.count_wins }}</td>
+                <td>{{ team.count_draws }}</td>
+                <td>{{ team.count_losses }}</td>
+                <td><img src="{% ifequal team.get_change "down" %}http://www.brisskmall.com/images/down_arrow.png{% else %}{% ifequal team.get_change "up" %}http://www.brisskmall.com/images/Arrow-Up.png{% else %}http://mediatapper.com/wp-content/uploads/2011/09/blue-arrow-in-front-right-side-icone-8631-64.png{% endifequal %}{% endifequal %}" /></td>
+                <td>{{ team.get_score_change|floatformat:"2" }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        <table class="table table-striped">
+            <tr>
+                <th>#</th>
+                <th>Leikmaður</th>
+                <th>Leikir</th>
+                <th>Sigrar</th>
+                <th>Jafntefli</th>
+                <th>Töp</th>
+                <th>Ratio</th>
+            </tr>
+            {% for team in combined %}
+            <tr class="player">
+                <td class="player-id" id="{{ team.pk }}">{{ forloop.counter }}</td>
+                <td class="player-name"><a href="{% url view-player team.pk %}">{{ team.name }}</a></td>
+                <td>{{ team.count_games }}</td>
+                <td>{{ team.count_wins }}</td>
+                <td>{{ team.count_draws }}</td>
+                <td>{{ team.count_losses }}</td>
+                <td>{{ team.win_loss_ratio_percentage|floatformat:2 }} %</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
 </div>
-<div class="span6">
-<table class="table table-striped">
-    <tr>
-        <th>#</th>
-        <th>Einstaklingur</th>
-        <th>Stig</th>
-        <th>Leikir</th>
-        <th>Sigrar</th>
-        <th>Jafntefli</th>
-        <th>Töp</th>
-        <th>Breyting</th>
-        <th>Stig +/-</th>
-    </tr>
-    {% for team in players %}
-    <tr>
-        <td>{{ forloop.counter }}</td>
-        <td><a href="{% url view-team team.pk %}">{{ team.name }}</a>{% for a in team.achievement_set.all %}<img title="{{ a.name }}" src="{{ MEDIA_URL }}/{{ a.icon }}" />{% endfor %}</td>
-        <td>{{ team.get_latest_points|floatformat:"0"|intcomma }}</td>
-        <td>{{ team.count_games }}</td>
-        <td>{{ team.count_wins }}</td>
-        <td>{{ team.count_draws }}</td>
-        <td>{{ team.count_losses }}</td>
-        <td><img src="{% ifequal team.get_change "down" %}http://www.brisskmall.com/images/down_arrow.png{% else %}{% ifequal team.get_change "up" %}http://www.brisskmall.com/images/Arrow-Up.png{% else %}http://mediatapper.com/wp-content/uploads/2011/09/blue-arrow-in-front-right-side-icone-8631-64.png{% endifequal %}{% endifequal %}" /></td>
-        <td>{{ team.get_score_change|floatformat:"2" }}</td>
-    </tr>
-    {% endfor %}
-</table>
-<table class="table table-striped">
-    <tr>
-        <th>#</th>
-        <th>Leikmaður</th>
-        <th>Leikir</th>
-        <th>Sigrar</th>
-        <th>Jafntefli</th>
-        <th>Töp</th>
-        <th>Ratio</th>
-    </tr>
-    {% for team in combined %}
-    <tr>
-        <td>{{ forloop.counter }}</td>
-        <td><a href="{% url view-player team.pk %}">{{ team.name }}</a></td>
-        <td>{{ team.count_games }}</td>
-        <td>{{ team.count_wins }}</td>
-        <td>{{ team.count_draws }}</td>
-        <td>{{ team.count_losses }}</td>
-        <td>{{ team.win_loss_ratio_percentage|floatformat:2 }} %</td>
-    </tr>
-    {% endfor %}
-</table>
-</div>
+<div class="row">
+    <div class="span5 alert alert-success" id="calculate_points"> </div>
+    <div class="span5 alert alert-success" id="generate_teams"> </div>
 </div>
 {% comment %}
 <div id="out"></div>
