@@ -97,7 +97,6 @@ def generate_teams(request):
     teamA = None
     teamB = None
     for game in valid_games:
-        print game[0]
         team1 = Team.objects.filter(players=game[0][0]).get(players=game[0][1])
         team2 = Team.objects.filter(players=game[1][0]).get(players=game[1][1])
         num_games = team1.count_games() + team2.count_games()

@@ -6,6 +6,9 @@ from compiler import compile
 MAX = 32
 INITIAL_POINTS = 1500.0
 
+class FifaTeam(models.Model):
+    name = models.CharField("Team name", max_length=255, blank=True, null=True)
+
 class Player(models.Model):
     name = models.CharField("Team name", max_length=255, blank=True, null=True)
 
@@ -171,6 +174,8 @@ RESULT_CHOICES = (
 class Game(models.Model):
     home_team = models.ForeignKey(Team, related_name="home_team")
     away_team = models.ForeignKey(Team, related_name="away_team")
+    home_fifa_team = models.ForeignKey(FifaTeam, related_name="home_fifa_team", blank=True, null=True)
+    away_fifa_team = models.ForeignKey(FifaTeam, related_name="away_fifa_team", blank=True, null=True)
     date = models.DateTimeField("Date of game", auto_now_add=True)
     result = models.CharField("Result", max_length=1, choices=RESULT_CHOICES)
     home_score = models.IntegerField(blank=True, null=True)
