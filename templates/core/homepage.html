@@ -19,7 +19,7 @@
                     if (counter == 2){
                         url = "/calculate_results?team1=" + team1() + "&team2=" + team2();
                         $("#dialog").load(url).dialog({modal:true, width:400});
-                        $(this).html("");
+                        $(this).html("<h3>Reikna stig</h3>");
                         counter = 0;
                     }
                     else {
@@ -43,12 +43,30 @@
                     if (player_counter == 4){
                         url = "/generate_teams?players=" + player1() + ',' + player2() + ',' + player3() + ',' + player4();
                         $("#dialog").load(url).dialog({modal:true, width:400});
-                        $(this).html("");
+                        $(this).html("<h3>Búa til lið</h3>");
                         player_counter = 0;
                         //window.location.href = "/generate_teams?players=" + player1() + ',' + player2() + ',' + player3() + ',' + player4();
                     }
                     else {
                         $(this).html($(this).html() + "<br />" + ui.draggable.find(".player-name").text());
+                    }
+                }
+            });
+            compare_counter = 0;
+            $("#compare_teams").droppable({
+                drop: function(event, ui) {
+                    compare_counter++;
+                    window['team' + compare_counter] = function() {
+                        return ui.draggable.find(".team-id").attr('id');
+                    }
+                    if (compare_counter == 2){
+                        url = "/compare_teams?team1=" + team1() + "&team2=" + team2();
+                        $("#dialog").load(url).dialog({modal:true, width:400});
+                        $(this).html("<h3>Bera saman lið</h3>");
+                        compare_counter = 0;
+                    }
+                    else {
+                        $(this).html($(this).html() + "<br />" + ui.draggable.find(".team-name").text());
                     }
                 }
             });
@@ -137,8 +155,15 @@
     </div>
 </div>
 <div class="row">
-    <div class="span5 alert alert-success" id="calculate_points"> </div>
-    <div class="span5 alert alert-success" id="generate_teams"> </div>
+    <div class="span3 alert alert-success" id="calculate_points">
+        <h3>Reikna stig</h3>
+    </div>
+    <div class="span3 alert alert-success" id="generate_teams">
+        <h3>Búa til lið</h3>
+    </div>
+    <div class="span3 alert alert-success" id="compare_teams">
+        <h3>Bera saman lið</h3>
+    </div>
 </div>
 <div id="dialog"></div>
 {% comment %}

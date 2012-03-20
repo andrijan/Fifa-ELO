@@ -1,0 +1,26 @@
+<div class="alert alert-info">
+    <table class="table">
+        <thead>
+            <tr>
+                <th></th>
+                <th>{{ team1 }}</th>
+                <th>Jafntefli</th>
+                <th>{{ team2 }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td></td>
+                <td>{{ t1win }}</td>
+                <td>{{ draw }}</td>
+                <td>{{ t2win }}</td>
+            </tr>
+            <tr>
+                <td>Stig</td> 
+                <td>{{ t1points|floatformat:2 }}</td>
+                <td></td>
+                <td>{{ t2points|floatformat:2 }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

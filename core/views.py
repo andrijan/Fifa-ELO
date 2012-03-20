@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -137,6 +138,51 @@ def calculate_results(request):
             't2draw': t2draw
     }
     return render_to_response('core/calculate_results.html', ctx,
+                                context_instance=RequestContext(request))
+
+def compare(team1, team2):
+    games = team1.list_games().filter(Q(home_team=team2) | Q(away_team=team2))
+    t1win = 0
+    draw = 0
+    t2win = 0
+    t1points = 0.0
+    t2points = 0.0
+    for game in games:
+        p1 = Points.objects.get(game=game, team=team1)
+        p2 = Points.objects.get(game=game, team=team2)
+        if game.result == "X":
+            draw += 1
+        elif game.home_team == team1:
+            if game.result == "1":
+                t1win += 1
+            elif game.result == "2":
+                t2win += 1
+        else:
+            if game.result == "2":
+                t1win += 1
+            elif game.result == "1":
+                t2win += 1
+        t1points += p1.get_change()
+        t2points += p2.get_change()
+    return t1win, draw, t2win, t1points, t2points
+
+def compare_teams(request):
+    team1 = request.GET.get('team1', '')
+    team2 = request.GET.get('team2', '')
+    team1 = Team.objects.get(pk=team1)
+    team2 = Team.objects.get(pk=team2)
+    t1win, draw, t2win, t1points, t2points = compare(team1, team2)
+
+    ctx = {'t1win': t1win,
+            't2win': t2win,
+            'draw' : draw,
+            't1points' : t1points,
+            't2points' : t2points,
+            'team1' : team1,
+            'team2' : team2,
+    }
+
+    return render_to_response('core/compare_teams.html', ctx,
                                 context_instance=RequestContext(request))
 
 
