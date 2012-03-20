@@ -99,6 +99,22 @@ class Team(models.Model):
     def count_losses(self):
         return self.home_team.filter(result='2').count() + self.away_team.filter(result='1').count()
 
+    def count_goals(self):
+        goals = 0
+        for game in self.home_team.all():
+            goals += game.home_goals
+        for game in self.away_team.all():
+            goals += game.away_goals
+        return goals
+
+    def count_goals_conceded(self):
+        goals = 0
+        for game in self.home_team.all():
+            goals += game.away_goals
+        for game in self.away_team.all():
+            goals += game.home_goals
+        return goals
+
     def list_games(self):
         games = Game.objects.filter(Q(home_team=self) | Q(away_team=self)).order_by('-date')
         return games
