@@ -17,9 +17,14 @@
                         return ui.draggable.find(".team-id").attr('id');
                     }
                     if (counter == 2){
-                        window.location.href = "/calculate_results?team1=" + team1() + "&team2=" + team2();
+                        url = "/calculate_results?team1=" + team1() + "&team2=" + team2();
+                        $("#dialog").load(url).dialog({modal:true, width:400});
+                        $(this).html("");
+                        counter = 0;
                     }
-                    $(this).html($(this).html() + "<br />" + ui.draggable.find(".team-name").text());
+                    else {
+                        $(this).html($(this).html() + "<br />" + ui.draggable.find(".team-name").text());
+                    }
                 }
             });
             $(".player").draggable({
@@ -36,9 +41,15 @@
                         return ui.draggable.find(".player-id").attr('id');
                     }
                     if (player_counter == 4){
-                        window.location.href = "/generate_teams?players=" + player1() + ',' + player2() + ',' + player3() + ',' + player4();
+                        url = "/generate_teams?players=" + player1() + ',' + player2() + ',' + player3() + ',' + player4();
+                        $("#dialog").load(url).dialog({modal:true, width:400});
+                        $(this).html("");
+                        player_counter = 0;
+                        //window.location.href = "/generate_teams?players=" + player1() + ',' + player2() + ',' + player3() + ',' + player4();
                     }
-                    $(this).html($(this).html() + "<br />" + ui.draggable.find(".player-name").text());
+                    else {
+                        $(this).html($(this).html() + "<br />" + ui.draggable.find(".player-name").text());
+                    }
                 }
             });
     });
@@ -129,6 +140,7 @@
     <div class="span5 alert alert-success" id="calculate_points"> </div>
     <div class="span5 alert alert-success" id="generate_teams"> </div>
 </div>
+<div id="dialog"></div>
 {% comment %}
 <div id="out"></div>
 {% googlecharts %}
