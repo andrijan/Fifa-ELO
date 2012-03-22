@@ -31,6 +31,23 @@
         {{ player }}<br />
         {% endfor %}
         <div id='chart_div' style='width: 700px; height: 240px;'></div>
+        <h3>Tölfræði</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Heiti</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in team.achievement_set.all %}
+                <tr>
+                    <td>{{ a.template.name }}</td>
+                    <td>{{ a.points|floatformat:"-2" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
     <div class="span6">
         <table class="table">

@@ -214,20 +214,26 @@ class Game(models.Model):
         return None
 
     def check_achievements(self, team=None):
-        for a in Achievement.objects.all():
-            pred = a.predicate.replace('\r','')
+        for template in AchievementTemplate.objects.all():
+            pred = template.predicate.replace('\r','')
             code = compile(pred, '<string>', 'exec')
             ns = {}
             exec code in ns
-            changed, game, team, new_points = ns['match'](self, a.points)
-            if changed:
-                if new_points > a.points:
-                    a.team.clear()
-                    a.game.clear()
-                    a.points = new_points
-                a.team.add(team)
-                a.game.add(game)
-                a.save()
+            team1 = self.home_team
+            team2 = self.away_team
+            for team in team1,team2:
+                try:
+                    achievement = Achievement.objects.get(template=template, team=team)
+                except:
+                    achievement = Achievement(template=template, team=team, points=0)
+                    achievement.save()
+                changed, new_points = ns['match'](self, team, achievement.points)
+                if changed:
+                    if new_points > achievement.points:
+                        achievement.game.clear()
+                        achievement.points = new_points
+                    achievement.game.add(self)
+                    achievement.save()
 
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -261,16 +267,29 @@ class Game(models.Model):
             pass
         self.check_achievements()
 
-class Achievement(models.Model):
-    team = models.ManyToManyField(Team, blank=True, null=True)
-    game = models.ManyToManyField(Game, blank=True, null=True)
-    points = models.FloatField(blank=True, null=True)
+class AchievementTemplate(models.Model):
     name = models.CharField("Achievement name", max_length=255, blank=True, null=True)
     icon = models.ImageField(upload_to="achievements")
     predicate = models.TextField(null=True, blank=True)
 
     def __unicode__(self):
         return u'%s' % (self.name)
+
+class Achievement(models.Model):
+    team = models.ForeignKey(Team, blank=True, null=True)
+    game = models.ManyToManyField(Game, blank=True, null=True)
+    points = models.FloatField(blank=True, null=True)
+    template = models.ForeignKey(AchievementTemplate, blank=True, null=True)
+
+    def is_highest(self):
+        achievements = Achievement.objects.filter(template=self.template)
+        for a in achievements:
+            if a.points > self.points:
+                return False
+        return True
+
+    def __unicode__(self):
+        return u'%s : %s' % (self.template.name, self.team.name)
 
 class Points(models.Model):
     team = models.ForeignKey(Team)
