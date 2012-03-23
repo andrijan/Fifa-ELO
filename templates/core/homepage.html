@@ -70,6 +70,24 @@
                     }
                 }
             });
+            compare_p_counter = 0;
+            $("#compare_players").droppable({
+                drop: function(event, ui) {
+                    compare_p_counter++;
+                    window['player' + compare_p_counter] = function() {
+                        return ui.draggable.find(".player-id").attr('id');
+                    }
+                    if (compare_p_counter == 2){
+                        url = "/compare_players?player1=" + player1() + "&player2=" + player2();
+                        $("#dialog").load(url).dialog({modal:true, width:400});
+                        $(this).html("<h3>Bera saman lið</h3>");
+                        compare_p_counter = 0;
+                    }
+                    else {
+                        $(this).html($(this).html() + "<br />" + ui.draggable.find(".player-name").text());
+                    }
+                }
+            });
     });
 </script>
 {% endblock extra_head %}
@@ -155,14 +173,25 @@
     </div>
 </div>
 <div class="row">
-    <div class="span3 alert alert-success" id="calculate_points">
-        <h3>Reikna stig</h3>
+    <div class="span3">
+        <div class="alert alert-success" id="calculate_points">
+            <h3>Reikna stig</h3>
+        </div>
     </div>
-    <div class="span3 alert alert-success" id="generate_teams">
-        <h3>Búa til lið</h3>
+    <div class="span3">
+        <div class="alert alert-success" id="generate_teams">
+            <h3>Búa til lið</h3>
+        </div>
     </div>
-    <div class="span3 alert alert-success" id="compare_teams">
-        <h3>Bera saman lið</h3>
+    <div class="span3">
+        <div class="alert alert-success" id="compare_teams">
+            <h3>Bera saman lið</h3>
+        </div>
+    </div>
+    <div class="span3">
+        <div class="alert alert-success" id="compare_players">
+            <h3>Bera saman leikmenn</h3>
+        </div>
     </div>
 </div>
 <div id="dialog"></div>
