@@ -166,6 +166,32 @@ def compare(team1, team2):
         t2points += p2.get_change()
     return t1win, draw, t2win, t1points, t2points
 
+def compare_p(player1, player2):
+    games = player1.list_games().filter(Q(home_team__players__in=[player2], away_team__players__in=[player1]) | Q(away_team__players__in=[player2], home_team__players__in=[player1]))
+    t1win = 0
+    draw = 0
+    t2win = 0
+    t1points = 0.0
+    t2points = 0.0
+    for game in games:
+        p1 = Points.objects.get(game=game, team__players__in=[player1])
+        p2 = Points.objects.get(game=game, team__players__in=[player2])
+        if game.result == "X":
+            draw += 1
+        elif player1 in game.home_team.players.all():
+            if game.result == "1":
+                t1win += 1
+            elif game.result == "2":
+                t2win += 1
+        else:
+            if game.result == "2":
+                t1win += 1
+            elif game.result == "1":
+                t2win += 1
+        t1points += p1.get_change()
+        t2points += p2.get_change()
+    return t1win, draw, t2win, t1points, t2points
+
 def compare_teams(request):
     team1 = request.GET.get('team1', '')
     team2 = request.GET.get('team2', '')
@@ -185,6 +211,24 @@ def compare_teams(request):
     return render_to_response('core/compare_teams.html', ctx,
                                 context_instance=RequestContext(request))
 
+def compare_players(request):
+    player1 = request.GET.get('player1', '')
+    player2 = request.GET.get('player2', '')
+    player1 = Player.objects.get(pk=player1)
+    player2 = Player.objects.get(pk=player2)
+    t1win, draw, t2win, t1points, t2points = compare_p(player1, player2)
+
+    ctx = {'t1win': t1win,
+            't2win': t2win,
+            'draw' : draw,
+            't1points' : t1points,
+            't2points' : t2points,
+            'player1' : player1,
+            'player2' : player2,
+    }
+
+    return render_to_response('core/compare_players.html', ctx,
+                                context_instance=RequestContext(request))
 
 def home(request):
     teams = Team.objects.filter(is_team=True)
