@@ -1,6 +1,6 @@
 from django.db import models
 from django.db.models import Q
-from datetime import datetime, time
+from datetime import datetime, time, timedelta, date
 from compiler import compile
 
 MAX = 32
@@ -59,6 +59,19 @@ class Team(models.Model):
             p.save()
             return p.points
 
+    def get_place(self, date=None):
+        teams = Team.objects.filter(is_team=self.is_team)
+        if date:
+            teams = sorted(teams, key=lambda t: t.get_points_by_date(date).points, reverse=True)
+        else:
+            teams = sorted(teams, key=lambda t: t.get_latest_points(), reverse=True)
+        counter = 1
+        for team in teams:
+            if team == self:
+                return counter
+            counter += 1
+        return False
+
     def get_points_by_date(self, date):
         points = self.points_set.filter(game__date__lte=datetime.combine(date, time.max)).order_by('-game__date')
         try:
@@ -67,11 +80,8 @@ class Team(models.Model):
             return Points.objects.filter(team=self)[0]
 
     def get_change(self):
-        current = self.get_latest_points()
-        try:
-            old = self.points_set.all().order_by('-date')[1].points
-        except:
-            return "same"
+        current = self.get_place()
+        old = self.get_place(date=date.today() - timedelta(days=1))
         if current > old:
             return "up"
         elif current < old:
