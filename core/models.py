@@ -82,9 +82,9 @@ class Team(models.Model):
     def get_change(self):
         current = self.get_place()
         old = self.get_place(date=date.today() - timedelta(days=1))
-        if current > old:
+        if current < old:
             return "up"
-        elif current < old:
+        elif current > old:
             return "down"
         else:
             return "same"
