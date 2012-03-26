@@ -20,4 +20,29 @@
     {% endfor %}
   </tbody>
 </table>
+
+<!-- Work in progress -->
+<table class="table table-condensed">
+  <thead>
+    <tr>
+      <th>Afrek</th>
+      <th>Fyrsta sæti</th>
+      <th>Annað sæti</th>
+      <th>Þriðja sæti</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for achievement, sorted_list in achievements_by_template %}
+    <tr>
+      <td>{{ achievement }}</td>
+      <td>{{ sorted_list.0 }}</td>
+      <td>{{ sorted_list.1 }}</td>
+      <td>{{ sorted_list.2 }}</td>
+    </tr>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+
 {% endblock main %}

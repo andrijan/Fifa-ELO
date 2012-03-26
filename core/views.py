@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from collections import defaultdict
 
 import json
 
@@ -70,7 +71,19 @@ def all_games(request):
 
 def achievements(request):
     achievements = Achievement.objects.all()
-    ctx = {'achievements': achievements}
+    
+    # Create an empty dictionary to seperate our achievements into 
+    achievements_by_template = defaultdict(list)
+    
+    # Add the achievements to the dict, based on template.name
+    for achievement in achievements:
+        achievements_by_template[achievement.template.name].append((achievement.team, achievement.points))
+
+    # Sort the achievements in the dict, based on score (highest first, etc.)
+    for k in achievements_by_template.iterkeys():
+        achievements_by_template[k] = sorted(achievements_by_template[k], key=lambda listIn: listIn[1], reverse=True)
+
+    ctx = {'achievements': achievements, 'achievements_by_template': achievements_by_template.items()}
     return render_to_response('core/achievements.html', ctx,
                               context_instance=RequestContext(request))
 
