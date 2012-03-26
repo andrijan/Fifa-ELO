@@ -116,7 +116,7 @@
                 <td>{{ team.count_draws }}</td>
                 <td>{{ team.count_losses }}</td>
                 <td>
-                    {%  ifequal team_get_change "same" %}
+                    {%  ifequal team.get_change "same" %}
                     <img src="
                         {% ifequal team.get_change "down" %}http://www.brisskmall.com/images/down_arrow.png
                         {% else %}
@@ -157,7 +157,7 @@
                 <td>{{ team.count_draws }}</td>
                 <td>{{ team.count_losses }}</td>
                 <td>
-                    {%  ifequal team_get_change "same" %}
+                    {%  ifequal team.get_change "same" %}
                     <img src="{% ifequal team.get_change "down" %}http://www.brisskmall.com/images/down_arrow.png
                               {% else %}
                                 {% ifequal team.get_change "up" %}http://www.brisskmall.com/images/Arrow-Up.png
