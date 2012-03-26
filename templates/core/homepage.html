@@ -116,11 +116,13 @@
                 <td>{{ team.count_draws }}</td>
                 <td>{{ team.count_losses }}</td>
                 <td>
+                    {%  if team_get_score_change != 0 %}
                     <img src="
                         {% ifequal team.get_change "down" %}http://www.brisskmall.com/images/down_arrow.png
                         {% else %}
                             {% ifequal team.get_change "up" %}http://www.brisskmall.com/images/Arrow-Up.png
                         {% endifequal %}{% endifequal %}" style="height:16px;"/>
+                    {% endif %}
                 </td>
                 <td>
                     <span class="label
@@ -155,11 +157,13 @@
                 <td>{{ team.count_draws }}</td>
                 <td>{{ team.count_losses }}</td>
                 <td>
+                    {%  if team_get_score_change != 0 %}
                     <img src="{% ifequal team.get_change "down" %}http://www.brisskmall.com/images/down_arrow.png
                               {% else %}
                                 {% ifequal team.get_change "up" %}http://www.brisskmall.com/images/Arrow-Up.png
                                 {% endifequal %}
                                 {% endifequal %}" style="height:16px;"/>
+                    {% endif %}
                 </td>
                 <td>
                     <span class="label
