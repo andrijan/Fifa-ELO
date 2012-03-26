@@ -12,7 +12,7 @@
     {% for achievement in achievements %}
       {% if achievement.is_highest %}
         <tr>
-          <td>{{ achievement.name }}</td>
+          <td>{{ achievement.template.name }}</td>
           <td><img alt="{{ achievement.template.name }}" title="{{ achievement.template.name }}" src="{{ MEDIA_URL }}/{{ achievement.template.icon }}" /></td>
           <td><a class="team-name" href="{% url view-team achievement.team.pk %}">{{ achievement.team }}</a></td>
         </tr>
