@@ -118,9 +118,9 @@
                 <td>
                     {%  ifnotequal team.get_change "same" %}
                     <img src="
-                        {% ifequal team.get_change "down" %}http://www.brisskmall.com/images/down_arrow.png
+                        {% ifequal team.get_change "down" %}/assets/static/img/Arrow-Down.png
                         {% else %}
-                            {% ifequal team.get_change "up" %}http://www.brisskmall.com/images/Arrow-Up.png
+                            {% ifequal team.get_change "up" %}/assets/static/img/Arrow-Up.png
                         {% endifequal %}{% endifequal %}" style="height:16px;"/>
                     {% endifnotequal %}
                 </td>
@@ -158,9 +158,10 @@
                 <td>{{ team.count_losses }}</td>
                 <td>
                     {%  ifnotequal team.get_change "same" %}
-                    <img src="{% ifequal team.get_change "down" %}http://www.brisskmall.com/images/down_arrow.png
+                    <img src="
+                        {% ifequal team.get_change "down" %}/assets/static/img/Arrow-Down.png
                               {% else %}
-                                {% ifequal team.get_change "up" %}http://www.brisskmall.com/images/Arrow-Up.png
+                                {% ifequal team.get_change "up" %}/assets/static/img/Arrow-Up.png
                                 {% endifequal %}
                                 {% endifequal %}" style="height:16px;"/>
                     {% endifnotequal %}
