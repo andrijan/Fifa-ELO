@@ -115,8 +115,20 @@
                 <td>{{ team.count_wins }}</td>
                 <td>{{ team.count_draws }}</td>
                 <td>{{ team.count_losses }}</td>
-                <td><img src="{% ifequal team.get_change "down" %}http://www.brisskmall.com/images/down_arrow.png{% else %}{% ifequal team.get_change "up" %}http://www.brisskmall.com/images/Arrow-Up.png{% else %}http://mediatapper.com/wp-content/uploads/2011/09/blue-arrow-in-front-right-side-icone-8631-64.png{% endifequal %}{% endifequal %}" /></td>
-                <td>{{ team.get_score_change|floatformat:"2" }}</td>
+                <td>
+                    <img src="
+                        {% ifequal team.get_change "down" %}http://www.brisskmall.com/images/down_arrow.png
+                        {% else %}
+                            {% ifequal team.get_change "up" %}http://www.brisskmall.com/images/Arrow-Up.png
+                            {% else %}http://mediatapper.com/wp-content/uploads/2011/09/blue-arrow-in-front-right-side-icone-8631-64.png
+                        {% endifequal %}{% endifequal %}" />
+                </td>
+                <td>
+                    <span class="label
+                        {% ifequal team.get_change "down" %} label-important{% else %}{% ifequal team.get_change "up" %} label-success{% else %} label-notice{% endifequal %}{% endifequal %}">
+                        {{ team.get_score_change|floatformat:"2" }}
+                    </span>
+                </td>
             </tr>
             {% endfor %}
         </table>
@@ -144,7 +156,12 @@
                 <td>{{ team.count_draws }}</td>
                 <td>{{ team.count_losses }}</td>
                 <td><img src="{% ifequal team.get_change "down" %}http://www.brisskmall.com/images/down_arrow.png{% else %}{% ifequal team.get_change "up" %}http://www.brisskmall.com/images/Arrow-Up.png{% else %}http://mediatapper.com/wp-content/uploads/2011/09/blue-arrow-in-front-right-side-icone-8631-64.png{% endifequal %}{% endifequal %}" /></td>
-                <td>{{ team.get_score_change|floatformat:"2" }}</td>
+                <td>
+                    <span class="label
+                        {% ifequal team.get_change "down" %} label-important{% else %}{% ifequal team.get_change "up" %} label-success{% else %} label-notice{% endifequal %}{% endifequal %}">
+                        {{ team.get_score_change|floatformat:"2" }}
+                    </span>
+                </td>
             </tr>
             {% endfor %}
         </table>
