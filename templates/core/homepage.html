@@ -125,7 +125,7 @@
                 </td>
                 <td>
                     <span class="label
-                        {% ifequal team.get_change "down" %} important{% else %}{% ifequal team.get_change "up" %} success{% else %} notice{% endifequal %}{% endifequal %}">
+                        {% ifequal team.get_change "down" %} label-important{% else %}{% ifequal team.get_change "up" %} label-success{% else %} label-notice{% endifequal %}{% endifequal %}">
                         {{ team.get_score_change|floatformat:"2" }}
                     </span>
                 </td>
@@ -158,7 +158,7 @@
                 <td><img src="{% ifequal team.get_change "down" %}http://www.brisskmall.com/images/down_arrow.png{% else %}{% ifequal team.get_change "up" %}http://www.brisskmall.com/images/Arrow-Up.png{% else %}http://mediatapper.com/wp-content/uploads/2011/09/blue-arrow-in-front-right-side-icone-8631-64.png{% endifequal %}{% endifequal %}" /></td>
                 <td>
                     <span class="label
-                        {% ifequal team.get_change "down" %} important{% else %}{% ifequal team.get_change "up" %} success{% else %} notice{% endifequal %}{% endifequal %}">
+                        {% ifequal team.get_change "down" %} label-important{% else %}{% ifequal team.get_change "up" %} label-success{% else %} label-notice{% endifequal %}{% endifequal %}">
                         {{ team.get_score_change|floatformat:"2" }}
                     </span>
                 </td>
