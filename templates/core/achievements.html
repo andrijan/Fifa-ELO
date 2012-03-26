@@ -1,9 +1,23 @@
 {% extends "content.html" %}
 {% block main %}
-<h1>Stærstu sigrar</h1>
-<div class="well">
-{% for game in games %}
-{{ game.home_team }} {{ game.home_score }} - {{ game.away_score }} {{ game.away_team }}<br />
-{% endfor %}
-</div>
+<table class="table table-condensed">
+  <thead>
+    <tr>
+      <th>Afrek</th>
+      <th>Bikar</th>
+      <th>Leikmaður/lið</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for achievement in achievements %}
+      {% if achievement.is_highest %}
+        <tr>
+          <td>{{ achievement.name }}</td>
+          <td><img alt="{{ achievement.template.name }}" title="{{ achievement.template.name }}" src="{{ MEDIA_URL }}/{{ achievement.template.icon }}" /></td>
+          <td><a class="team-name" href="{% url view-team achievement.team.pk %}">{{ achievement.team }}</a></td>
+        </tr>
+      {% endif %}
+    {% endfor %}
+  </tbody>
+</table>
 {% endblock main %}

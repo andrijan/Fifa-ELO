@@ -301,6 +301,12 @@ class Achievement(models.Model):
     def __unicode__(self):
         return u'%s : %s' % (self.template.name, self.team.name)
 
+    def name(self):
+        return u'%s' % self.template.name
+
+    def winner(self):
+        return u'%s' % self.team.name
+
 class Points(models.Model):
     team = models.ForeignKey(Team)
     date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
