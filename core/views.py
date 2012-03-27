@@ -77,7 +77,7 @@ def achievements(request):
     
     # Add the achievements to the dict, based on template.name
     for achievement in achievements:
-        achievements_by_template[achievement.template.name].append((achievement.team, achievement.points))
+        achievements_by_template[achievement.template.name].append((achievement.team.name, achievement.points))
 
     # Sort the achievements in the dict, based on score (highest first, etc.)
     for k in achievements_by_template.iterkeys():
