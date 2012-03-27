@@ -35,9 +35,9 @@
     {% for achievement, sorted_list in achievements_by_template %}
     <tr>
       <td>{{ achievement }}</td>
-      <td>{{ sorted_list.0 }}</td>
-      <td>{{ sorted_list.1 }}</td>
-      <td>{{ sorted_list.2 }}</td>
+      <td>{{ sorted_list.0.0 }}, {{ sorted_list.0.1|floatformat }}</td>
+      <td>{{ sorted_list.1.0 }}, {{ sorted_list.1.1|floatformat }}</td>
+      <td>{{ sorted_list.2.0 }}, {{ sorted_list.2.1|floatformat }}</td>
     </tr>
     </tr>
     {% endfor %}
