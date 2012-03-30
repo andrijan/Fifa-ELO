@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 from django.db.models import Q
 from django.http import HttpResponse
-from django.shortcuts import render_to_response
+from django.core.urlresolvers import reverse
+from django.shortcuts import render_to_response, HttpResponseRedirect
 from django.template import RequestContext
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from collections import defaultdict
 
 import json
 
-from models import Team, Points, Player, Game, Achievement
+from models import Team, Points, Player, Game, Achievement, Tournament, TournamentElimination, EliminationStatus, TournamentGroup
 
 def score(request):
     teams = Team.objects.all()
@@ -242,6 +243,39 @@ def compare_players(request):
 
     return render_to_response('core/compare_players.html', ctx,
                                 context_instance=RequestContext(request))
+
+def view_tournament(request, tournament_id):
+    tournament = Tournament.objects.get(pk=tournament_id)
+    ctx = {'tournament': tournament,
+    }
+
+    return render_to_response('core/view_tournament.html', ctx,
+                                context_instance=RequestContext(request))
+
+def list_tournaments(request):
+    tournaments = Tournament.objects.all()
+    ctx = {'tournaments': tournaments,
+    }
+
+    return render_to_response('core/list_tournaments.html', ctx,
+                                context_instance=RequestContext(request))
+
+def next_elimination_stage(request, tournament_id, current_code=None):
+    tournament = Tournament.objects.get(pk=tournament_id)
+    if not current_code:
+        tg = TournamentGroup.objects.filter(tournament=tournament)[0]
+        tg.add_to_elimination()
+        return HttpResponseRedirect(reverse('view-tournament', args=[tournament_id]))
+
+    tes = list(TournamentElimination.objects.filter(game__tournament=tournament, status__code=current_code))
+    new_code = EliminationStatus.objects.get(code=(int(current_code) / 2))
+    while tes:
+        game = Game(home_team=tes.pop(0).game.winner(), away_team=tes.pop().game.winner(), tournament=tournament)
+        game.save()
+        te = TournamentElimination(game=game, status=new_code)
+        te.save()
+
+    return HttpResponseRedirect(reverse('view-tournament', args=[tournament_id]))
 
 def home(request):
     teams = Team.objects.filter(is_team=True)

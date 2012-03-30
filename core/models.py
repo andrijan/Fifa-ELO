@@ -1,3 +1,5 @@
+import operator
+
 from django.db import models
 from django.db.models import Q
 from datetime import datetime, time, timedelta, date
@@ -16,20 +18,20 @@ class Player(models.Model):
     name = models.CharField("Team name", max_length=255, blank=True, null=True)
 
     def list_games(self):
-        games = Game.objects.filter(Q(home_team__players__in=[self]) | Q(away_team__players__in=[self])).order_by('-date').distinct()
+        games = Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self]) | Q(away_team__players__in=[self])).order_by('-date').distinct()
         return games
 
     def count_games(self):
-        return Game.objects.filter(Q(home_team__players=self) | Q(away_team__players=self)).order_by('-date').distinct().count()
+        return Game.objects.filter(result__isnull=False).filter(Q(home_team__players=self) | Q(away_team__players=self)).order_by('-date').distinct().count()
 
     def count_wins(self):
-        return Game.objects.filter(Q(home_team__players__in=[self], result='1') | Q(away_team__players__in=[self], result='2')).order_by('-date').distinct().count()
+        return Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self], result='1') | Q(away_team__players__in=[self], result='2')).order_by('-date').distinct().count()
 
     def count_draws(self):
-        return Game.objects.filter(Q(home_team__players__in=[self], result='X') | Q(away_team__players__in=[self], result='X')).order_by('-date').distinct().count()
+        return Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self], result='X') | Q(away_team__players__in=[self], result='X')).order_by('-date').distinct().count()
 
     def count_losses(self):
-        return Game.objects.filter(Q(home_team__players__in=[self], result='2') | Q(away_team__players__in=[self], result='1')).order_by('-date').distinct().count()
+        return Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self], result='2') | Q(away_team__players__in=[self], result='1')).order_by('-date').distinct().count()
 
     def win_loss_ratio(self):
         try:
@@ -39,6 +41,9 @@ class Player(models.Model):
 
     def win_loss_ratio_percentage(self):
         return self.win_loss_ratio() * 100.0
+
+    def team(self):
+        return Team.objects.get(name=self.name)
 
     def __unicode__(self):
         return u'%s' % self.name
@@ -98,7 +103,7 @@ class Team(models.Model):
         return current - old
 
     def count_games(self):
-        return self.home_team.count() + self.away_team.count()
+        return self.home_team.filter(result__isnull=False).count() + self.away_team.filter(result__isnull=False).count()
 
     def count_wins(self):
         return self.home_team.filter(result='1').count() + self.away_team.filter(result='2').count()
@@ -111,22 +116,22 @@ class Team(models.Model):
 
     def count_goals(self):
         goals = 0
-        for game in self.home_team.all():
+        for game in self.home_team.filter(result__isnull=False):
             goals += game.home_goals
-        for game in self.away_team.all():
+        for game in self.away_team.filter(result__isnull=False):
             goals += game.away_goals
         return goals
 
     def count_goals_conceded(self):
         goals = 0
-        for game in self.home_team.all():
+        for game in self.home_team.filter(result__isnull=False):
             goals += game.away_goals
-        for game in self.away_team.all():
+        for game in self.away_team.filter(result__isnull=False):
             goals += game.home_goals
         return goals
 
     def list_games(self):
-        games = Game.objects.filter(Q(home_team=self) | Q(away_team=self)).order_by('-date')
+        games = Game.objects.filter(result__isnull=False).filter(Q(home_team=self) | Q(away_team=self)).order_by('-date')
         return games
 
     def longest_win_streak(self):
@@ -173,17 +178,17 @@ class Team(models.Model):
 
     def average_goals_per_game(self):
         goals = 0
-        for game in self.home_team.all():
+        for game in self.home_team.filter(result__isnull=False):
             goals += game.home_score
-        for game in self.away_team.all():
+        for game in self.away_team.filter(result__isnull=False):
             goals += game.away_score
         return goals/float(self.count_games())
 
     def average_goals_conceded_per_game(self):
         goals = 0
-        for game in self.home_team.all():
+        for game in self.home_team.filter(result__isnull=False):
             goals += game.away_score
-        for game in self.away_team.all():
+        for game in self.away_team.filter(result__isnull=False):
             goals += game.home_score
         return goals/float(self.count_games())
 
@@ -200,21 +205,78 @@ RESULT_CHOICES = (
     ('2', '2'),
 )
 
+def roundRobin(units, sets=None):
+    """ Generates a schedule of "fair" pairings from a list of units """
+    if len(units) % 2:
+        units.append(None)
+    count    = len(units)
+    sets     = sets or (count - 1)
+    half     = count / 2
+    schedule = []
+    for turn in range(sets):
+        pairings = []
+        for i in range(half):
+            pairings.append((units[i], units[count-i-1]))
+        units.insert(1, units.pop())
+        schedule.append(pairings)
+    return schedule
+
+
+class Tournament(models.Model):
+    name = models.CharField("Tournament name", max_length=255)
+    date = models.DateField("Date of tournament", blank=True, null=True)
+    location = models.CharField("Location", max_length=255, blank=True, null=True)
+    players = models.ManyToManyField(Player)
+    is_team = models.BooleanField(default=True)
+
+    def __unicode__(self):
+        return u'%s' % self.name
+
+    def clean(self, *args, **kwargs):
+        super(Tournament, self).save(*args, **kwargs)
+        players = sorted(self.players.all(), key=lambda p: p.team().get_latest_points(), reverse=True)
+        teams = []
+        if self.is_team:
+            while players:
+                teams.append(Team.objects.filter(players__in=[players.pop(0)]).get(players__in=[players.pop()]))
+        else:
+            while players:
+                teams.append(Team.objects.get(players__in=[players.pop()], is_team=False))
+        try:
+            group = TournamentGroup.objects.get(name="Group A", tournament=self)
+        except:
+            group = TournamentGroup(name="Group A", tournament=self)
+            group.save()
+        for round_num in roundRobin(teams):
+            for g in round_num:
+                if g[0] is not None and g[1] is not None:
+                    game = Game(home_team=g[0], away_team=g[1], tournament=self)
+                    game.save()
+                    group.games.add(game)
+                    group.save()
+
+
 class Game(models.Model):
     home_team = models.ForeignKey(Team, related_name="home_team")
     away_team = models.ForeignKey(Team, related_name="away_team")
     home_fifa_team = models.ForeignKey(FifaTeam, related_name="home_fifa_team", blank=True, null=True)
     away_fifa_team = models.ForeignKey(FifaTeam, related_name="away_fifa_team", blank=True, null=True)
     date = models.DateTimeField("Date of game", auto_now_add=True)
-    result = models.CharField("Result", max_length=1, choices=RESULT_CHOICES)
+    result = models.CharField("Result", max_length=1, choices=RESULT_CHOICES, blank=True, null=True)
     home_score = models.IntegerField(blank=True, null=True)
     away_score = models.IntegerField(blank=True, null=True)
+    date_played = models.DateTimeField("Playtime of game", auto_now=True, blank=True, null=True)
+    tournament = models.ForeignKey(Tournament, blank=True, null=True)
+    calculate_points = models.BooleanField(default=False)
 
     def __unicode__(self):
         return u'%s: %s - %s' % (self.date, self.home_team, self.away_team)
 
     def display_score(self):
-        return u'%s - %s' % (self.home_score, self.away_score)
+        if self.result:
+            return u'%s - %s' % (self.home_score, self.away_score)
+        else:
+            return u'Leikur ekki hafinn'
 
     def winner(self):
         if self.result == "1":
@@ -246,7 +308,7 @@ class Game(models.Model):
                     achievement.save()
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if self.calculate_points and Points.objects.filter(game=self).count() == 0:
             if self.result == '1':
                 result = 1
             elif self.result == 'X':
@@ -275,7 +337,68 @@ class Game(models.Model):
             np2.save()
         except:
             pass
-        self.check_achievements()
+        if self.calculate_points:
+            self.check_achievements()
+
+class TournamentGroup(models.Model):
+    name = models.CharField("Group name", max_length=255)
+    tournament = models.ForeignKey(Tournament)
+    games = models.ManyToManyField(Game)
+
+    def __unicode__(self):
+        return u'%s - %s' % (self.tournament.name, self.name)
+
+    def calculate_places(self):
+        teams = {}
+        for game in self.games.all():
+            if game.result == "1":
+                try:
+                    teams[game.home_team] = teams[game.home_team] + 3
+                except:
+                    teams[game.home_team] = 3
+            elif game.result == "X":
+                try:
+                    teams[game.home_team] = teams[game.home_team] + 1
+                except:
+                    teams[game.home_team] = 1
+                try:
+                    teams[game.away_team] = teams[game.away_team] + 1
+                except:
+                    teams[game.away_team] = 1
+            elif game.result == "2":
+                try:
+                    teams[game.away_team] = teams[game.away_team] + 3
+                except:
+                    teams[game.away_team] = 3
+        teams = sorted(teams.iteritems(), key=operator.itemgetter(1), reverse=True)
+        return teams
+
+    def add_to_elimination(self):
+        teams = self.calculate_places()
+        code = len(teams)
+
+        while teams:
+            game = Game(home_team=teams.pop(0)[0], away_team=teams.pop()[0], tournament=self.tournament)
+            game.save()
+            te = TournamentElimination(game=game, status=EliminationStatus.objects.get(code=code))
+            te.save()
+
+        return True
+
+class EliminationStatus(models.Model):
+    name = models.CharField(max_length=255)
+    code = models.CharField(max_length=255, blank=True, null=True)
+    order = models.IntegerField()
+
+    def __unicode__(self):
+        return u'%s' % self.name
+
+class TournamentElimination(models.Model):
+    game = models.ForeignKey(Game)
+    status = models.ForeignKey(EliminationStatus)
+
+    def __unicode__(self):
+        return u'%s - %s' % (self.game, self.status.name)
 
 class AchievementTemplate(models.Model):
     name = models.CharField("Achievement name", max_length=255, blank=True, null=True)
@@ -312,4 +435,5 @@ class Points(models.Model):
 
     def __unicode__(self):
         return u'%s: %s - %s' % (self.date, self.team, self.points)
+
 

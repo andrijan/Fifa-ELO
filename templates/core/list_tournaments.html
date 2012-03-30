@@ -1,0 +1,23 @@
+{% extends "content.html" %}
+{% block main %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Dagsetning</th>
+            <th>Nafn</th>
+            <th>Staðsetnings</th>
+            <th>Leikmenn</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tournament in tournaments %}
+        <tr>
+            <td>{{ tournament.date|date }}</td>
+            <td><a href="{% url view-tournament tournament.pk %}">{{ tournament.name }}</a></td>
+            <td>@ {{ tournament.location }}</td>
+            <td>{{ tournament.players.all|join:", " }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock main %}

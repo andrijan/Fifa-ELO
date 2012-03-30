@@ -1,0 +1,33 @@
+{% extends "content.html" %}
+{% block main %}
+<h1>{{ tournament.name }} @ {{ tournament.location }}</h1>
+<div class="well">
+    <a href="{% url next-elimination-stage tournament.pk %}" class="btn btn-primary">Útsláttur</a>
+    <a href="{% url next-elimination-stage tournament.pk 8 %}" class="btn btn-primary">Undanúrslit</a>
+    <a href="{% url next-elimination-stage tournament.pk 4 %}" class="btn btn-primary">Úrslit</a>
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th></th>
+            <th>Heimalið</th>
+            <th></th>
+            <th></th>
+            <th>Útilið</th>
+            <th>Úrslit</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for game in tournament.game_set.all %}
+        <tr>
+            <td>{{ game.tournamentelimination_set.all.0.status.name }}</td>
+            <td><a href="{% url view-team game.home_team.pk %}">{{ game.home_team }}</a></td>
+            <td>{% if game.home_fifa_team %}{{ game.home_fifa_team }}{% endif %}</td>
+            <td>{% if game.away_fifa_team %}{{ game.away_fifa_team }}{% endif %}</td>
+            <td><a href="{% url view-team game.away_team.pk %}">{{ game.away_team }}</a></td>
+            <td>{{ game.display_score }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock main %}
