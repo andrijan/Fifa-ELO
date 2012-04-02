@@ -11,6 +11,8 @@
             });
             counter = 0;
             $("#calculate_points").droppable({
+                activeClass: 'alert-success',
+                accept: ".team",
                 drop: function(event, ui) {
                     counter++;
                     window['team' + counter] = function() {
@@ -35,6 +37,8 @@
             });
             player_counter = 0;
             $("#generate_teams").droppable({
+                activeClass: 'alert-success',
+                accept: ".player",
                 drop: function(event, ui) {
                     player_counter++;
                     window['player' + player_counter] = function() {
@@ -54,6 +58,8 @@
             });
             compare_counter = 0;
             $("#compare_teams").droppable({
+                activeClass: 'alert-success',
+                accept: ".team",
                 drop: function(event, ui) {
                     compare_counter++;
                     window['team' + compare_counter] = function() {
@@ -72,6 +78,8 @@
             });
             compare_p_counter = 0;
             $("#compare_players").droppable({
+                activeClass: 'alert-success',
+                accept: ".player",
                 drop: function(event, ui) {
                     compare_p_counter++;
                     window['player' + compare_p_counter] = function() {
@@ -201,22 +209,22 @@
 </div>
 <div class="row">
     <div class="span3">
-        <div class="alert alert-success" id="calculate_points">
+        <div class="alert" id="calculate_points">
             <h3>Reikna stig</h3>
         </div>
     </div>
     <div class="span3">
-        <div class="alert alert-success" id="generate_teams">
+        <div class="alert" id="generate_teams">
             <h3>Búa til lið</h3>
         </div>
     </div>
     <div class="span3">
-        <div class="alert alert-success" id="compare_teams">
+        <div class="alert" id="compare_teams">
             <h3>Bera saman lið</h3>
         </div>
     </div>
     <div class="span3">
-        <div class="alert alert-success" id="compare_players">
+        <div class="alert" id="compare_players">
             <h3>Bera saman leikmenn</h3>
         </div>
     </div>
