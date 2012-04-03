@@ -53,6 +53,12 @@ class Team(models.Model):
     players = models.ManyToManyField(Player)
     is_team = models.BooleanField()
 
+    def valid_game(self, team2):
+        for player in self.players:
+            if player in team2.players:
+                return False
+        return True
+
     def check_achievements(self, game=None, team=None):
         pass
 
