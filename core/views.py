@@ -277,6 +277,28 @@ def next_elimination_stage(request, tournament_id, current_code=None):
 
     return HttpResponseRedirect(reverse('view-tournament', args=[tournament_id]))
 
+def game_combinations(request):
+    is_team = request.GET.get('is_team', False)
+    teams = Team.objects.filter(is_team=is_team)
+    list_teams = {}
+    for team1 in teams:
+        for team2 in teams:
+            if team1.valid_game(team2):
+                try:
+                    list_teams[(team2, team1)]
+                except:
+                    t1,t2,t3,p1,p2 = compare(team1, team2)
+                    list_teams[(team1,team2)] = t1+t2+t3
+
+    list_teams = sorted(list_teams.items(), key=lambda (k,v): (v,k))
+    ctx = {'list_teams': list_teams,
+    }
+
+    return render_to_response('core/game_combinations.html', ctx,
+                                context_instance=RequestContext(request))
+
+
+
 def home(request):
     teams = Team.objects.filter(is_team=True)
     players = Team.objects.filter(is_team=False)

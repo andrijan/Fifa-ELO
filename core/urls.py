@@ -1,5 +1,5 @@
 from django.conf.urls.defaults import patterns, url
-from views import home, score, view_team, view_player, achievements, all_teams, all_games, generate_teams, calculate_results, compare_teams, compare_players, view_tournament, list_tournaments, next_elimination_stage
+from views import home, score, view_team, view_player, achievements, all_teams, all_games, generate_teams, calculate_results, compare_teams, compare_players, view_tournament, list_tournaments, next_elimination_stage, game_combinations
 urlpatterns = patterns('',
     url(r'^$', home, name='home'),
     url(r'^score/$', score, name='score'),
@@ -7,6 +7,7 @@ urlpatterns = patterns('',
     url(r'^generate_teams/$', generate_teams, name='generate-teams'),
     url(r'^compare_teams/$', compare_teams, name='compare-teams'),
     url(r'^compare_players/$', compare_players, name='compare-players'),
+    url(r'^game_combinations/$', game_combinations, name='game-combinations'),
     url(r'^all_teams/$', all_teams, name='all-teams'),
     url(r'^all_games/$', all_games, name='all-games'),
     url(r'^calculate_results/$', calculate_results, name='calculate-results'),

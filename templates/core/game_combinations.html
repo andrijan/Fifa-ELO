@@ -1,0 +1,21 @@
+{% extends "content.html" %}
+{% block main %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Lið 1</th>
+            <th>Lið 2</th>
+            <th>Leikir</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for combination,num_games in list_teams %}
+        <tr>
+            <td>{{ combination.0 }}</td>
+            <td>{{ combination.1 }}</td>
+            <td>{{ num_games }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock main %}
