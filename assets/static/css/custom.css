@@ -1,0 +1,7 @@
+@font-face {
+  font-family: cool_font;
+  src: url('scoreboard.ttf');
+}
+div.scoreboard {
+  font-family: cool_font;
+}
