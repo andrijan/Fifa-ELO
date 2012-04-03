@@ -54,8 +54,8 @@ class Team(models.Model):
     is_team = models.BooleanField()
 
     def valid_game(self, team2):
-        for player in self.players:
-            if player in team2.players:
+        for player in self.players.all():
+            if player in team2.players.all():
                 return False
         return True
 
