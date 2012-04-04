@@ -1,7 +1,7 @@
 import operator
 
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, Max
 from datetime import datetime, time, timedelta, date
 from compiler import compile
 
@@ -10,6 +10,7 @@ INITIAL_POINTS = 1500.0
 
 class FifaTeam(models.Model):
     name = models.CharField("Team name", max_length=255, blank=True, null=True)
+    image = models.ImageField(upload_to="fifa_teams", blank=True, null=True)
 
     def __unicode__(self):
         return u'%s' % self.name
@@ -52,6 +53,11 @@ class Team(models.Model):
     name = models.CharField("Team name", max_length=255, blank=True, null=True)
     players = models.ManyToManyField(Player)
     is_team = models.BooleanField()
+    image = models.ImageField(upload_to="teams", blank=True, null=True)
+
+    def favourite_fifa_team(self):
+        games = self.list_games().aggregate(Max('home_fifa_team'))
+        return games
 
     def valid_game(self, team2):
         for player in self.players.all():
@@ -138,6 +144,14 @@ class Team(models.Model):
 
     def list_games(self):
         games = Game.objects.filter(result__isnull=False).filter(Q(home_team=self) | Q(away_team=self)).order_by('-date')
+        return games
+
+    def list_home_games(self):
+        games = Game.objects.filter(result__isnull=False, home_team=self).order_by('-date')
+        return games
+
+    def list_away_games(self):
+        games = Game.objects.filter(result__isnull=False, away_team=self).order_by('-date')
         return games
 
     def longest_win_streak(self):

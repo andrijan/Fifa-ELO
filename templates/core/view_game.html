@@ -1,0 +1,24 @@
+{% extends "content.html" %}
+{% load humanize %}
+{% block main %}
+<div class="row">
+    <div class="span7">
+        <h1>{{ object.home_team }} - {{ object.away_team }}</h1>
+    </div>
+</div>
+<div class="row scoreboard">
+    <div class="span3">
+        <span class="pull-right">
+            {{ object.home_score }}
+        </span>
+    </div>
+    <div class="span1">
+         -
+     </div>
+    <div class="span3">
+        <span class="pull-left">
+            {{ object.away_score }}
+        </span>
+    </div>
+</div>
+{% endblock main %}

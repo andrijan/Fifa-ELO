@@ -4,4 +4,6 @@
 }
 div.scoreboard {
   font-family: cool_font;
+  font-size: 100px;
+  line-height: 200px;
 }
