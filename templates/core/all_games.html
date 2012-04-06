@@ -4,6 +4,7 @@
     <thead>
         <tr>
             <th>Dagsetning</th>
+            <th></th>
             <th>Heimalið</th>
             <th></th>
             <th></th>
@@ -15,6 +16,7 @@
         {% for game in games.object_list %}
         <tr>
             <td>{{ game.date|date }}</td>
+            <td><a href="../view_game/{{ game.pk }}">Opna</a></td>
             <td><a href="{% url view-team game.home_team.pk %}">{{ game.home_team }}</a></td>
             <td>{% if game.home_fifa_team %}{{ game.home_fifa_team }}{% endif %}</td>
             <td>{% if game.away_fifa_team %}{{ game.away_fifa_team }}{% endif %}</td>
