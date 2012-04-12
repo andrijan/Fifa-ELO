@@ -109,14 +109,14 @@ def generate_teams(request):
         if valid:
             valid_games.append(g)
 
-    total_games = None
+    total_games = 9999999
     teamA = None
     teamB = None
     for game in valid_games:
         team1 = Team.objects.filter(players=game[0][0]).get(players=game[0][1])
         team2 = Team.objects.filter(players=game[1][0]).get(players=game[1][1])
         num_games = Game.objects.filter(Q(home_team=team1, away_team=team2) | Q(home_team=team2, away_team=team1)).count() #team1.count_games() + team2.count_games()
-        if not total_games or num_games < total_games:
+        if num_games < total_games:
             total_games = num_games
             teamA = team1
             teamB = team2
