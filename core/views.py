@@ -48,6 +48,7 @@ def all_teams(request):
             current_teams.append([team, team.get_points_by_date(date).points])
         current_date['teams'] = current_teams
         points.append(current_date)
+
     ctx = {'teams': teams, 'dates': dates, 'points': points}
     return render_to_response('core/all_teams.html', ctx,
                                 context_instance=RequestContext(request))
@@ -114,7 +115,7 @@ def generate_teams(request):
     for game in valid_games:
         team1 = Team.objects.filter(players=game[0][0]).get(players=game[0][1])
         team2 = Team.objects.filter(players=game[1][0]).get(players=game[1][1])
-        num_games = Game.objects.filter(home_team=team1, away_team=team2).count() #team1.count_games() + team2.count_games()
+        num_games = Game.objects.filter(Q(home_team=team1, away_team=team2) | Q(home_team=team2, away_team=team1)).count() #team1.count_games() + team2.count_games()
         if not total_games or num_games < total_games:
             total_games = num_games
             teamA = team1
