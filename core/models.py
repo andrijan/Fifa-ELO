@@ -320,7 +320,11 @@ class Game(models.Model):
                     achievement = Achievement(template=template, team=team, points=0)
                     achievement.save()
                 changed, new_points = ns['match'](self, team, achievement.points)
-                if changed:
+                if template.is_average:
+                    achievement.game.clear()
+                    achievement.points = new_points
+                    achievement.save()
+                elif changed:
                     if new_points > achievement.points:
                         achievement.game.clear()
                         achievement.points = new_points
@@ -424,6 +428,7 @@ class AchievementTemplate(models.Model):
     name = models.CharField("Achievement name", max_length=255, blank=True, null=True)
     icon = models.ImageField(upload_to="achievements")
     predicate = models.TextField(null=True, blank=True)
+    is_average = models.BooleanField(default=False)
 
     def __unicode__(self):
         return u'%s' % (self.name)
