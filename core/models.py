@@ -322,10 +322,11 @@ class Game(models.Model):
                 changed, new_points = ns['match'](self, team, achievement.points)
                 if template.is_average:
                     achievement.game.clear()
+                    achievement.game.add(self)
                     achievement.points = new_points
                     achievement.save()
                 elif changed:
-                    if new_points > achievement.points:
+                    if float(new_points) > float(achievement.points):
                         achievement.game.clear()
                         achievement.points = new_points
                     achievement.game.add(self)
