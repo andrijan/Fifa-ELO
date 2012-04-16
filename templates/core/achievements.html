@@ -4,28 +4,6 @@
   <thead>
     <tr>
       <th>Afrek</th>
-      <th>Bikar</th>
-      <th>Leikmaður/lið</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for achievement in achievements %}
-      {% if achievement.is_highest %}
-        <tr>
-          <td>{{ achievement.template.name }}</td>
-          <td><img alt="{{ achievement.template.name }}" title="{{ achievement.template.name }}" src="{{ MEDIA_URL }}/{{ achievement.template.icon }}" /></td>
-          <td><a class="team-name" href="{% url view-team achievement.team.pk %}">{{ achievement.team }}</a></td>
-        </tr>
-      {% endif %}
-    {% endfor %}
-  </tbody>
-</table>
-
-<!-- Work in progress -->
-<table class="table table-condensed">
-  <thead>
-    <tr>
-      <th>Afrek</th>
       <th>Fyrsta sæti</th>
       <th>Annað sæti</th>
       <th>Þriðja sæti</th>
