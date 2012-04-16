@@ -4,6 +4,7 @@
   <thead>
     <tr>
       <th>Afrek</th>
+      <th>Bikar</th>
       <th>Fyrsta sæti</th>
       <th>Annað sæti</th>
       <th>Þriðja sæti</th>
@@ -13,6 +14,7 @@
     {% for achievement, sorted_list in achievements_by_template %}
     <tr>
       <td>{{ achievement.name }}</td>
+      <td><img alt="{{ achievement.template.name }}" title="{{ achievement.template.name }}" src="{{ MEDIA_URL }}/{{ achievement.template.icon }}" /></td>
       <td>{% if sorted_list.0.2 %}<a class="btn btn-mini" href="{% url view-game sorted_list.0.2.pk %}">Opna</a>{% endif %} {{ sorted_list.0.0 }}, {{ sorted_list.0.1|floatformat }}</td>
       <td>{% if sorted_list.1.2 %}<a class="btn btn-mini" href="{% url view-game sorted_list.1.2.pk %}">Opna</a>{% endif %} {{ sorted_list.1.0 }}, {{ sorted_list.1.1|floatformat }}</td>
       <td>{% if sorted_list.2.2 %}<a class="btn btn-mini" href="{% url view-game sorted_list.2.2.pk %}">Opna</a>{% endif %} {{ sorted_list.2.0 }}, {{ sorted_list.2.1|floatformat }}</td>
