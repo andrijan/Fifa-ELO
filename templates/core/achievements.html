@@ -34,11 +34,10 @@
   <tbody>
     {% for achievement, sorted_list in achievements_by_template %}
     <tr>
-      <td>{{ achievement }}</td>
-      <td>{{ sorted_list.0.0 }}, {{ sorted_list.0.1|floatformat }}</td>
-      <td>{{ sorted_list.1.0 }}, {{ sorted_list.1.1|floatformat }}</td>
-      <td>{{ sorted_list.2.0 }}, {{ sorted_list.2.1|floatformat }}</td>
-    </tr>
+      <td>{{ achievement.name }}</td>
+      <td>{% if sorted_list.0.2 %}<a class="btn btn-mini" href="{% url view-game sorted_list.0.2.pk %}">Opna</a>{% endif %} {{ sorted_list.0.0 }}, {{ sorted_list.0.1|floatformat }}</td>
+      <td>{% if sorted_list.1.2 %}<a class="btn btn-mini" href="{% url view-game sorted_list.1.2.pk %}">Opna</a>{% endif %} {{ sorted_list.1.0 }}, {{ sorted_list.1.1|floatformat }}</td>
+      <td>{% if sorted_list.2.2 %}<a class="btn btn-mini" href="{% url view-game sorted_list.2.2.pk %}">Opna</a>{% endif %} {{ sorted_list.2.0 }}, {{ sorted_list.2.1|floatformat }}</td>
     </tr>
     {% endfor %}
   </tbody>

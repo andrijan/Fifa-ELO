@@ -74,14 +74,13 @@ def all_games(request):
 def achievements(request):
     achievements = Achievement.objects.all()
     
-    # Create an empty dictionary to seperate our achievements into 
     achievements_by_template = defaultdict(list)
-    
-    # Add the achievements to the dict, based on template.name
     for achievement in achievements:
-        achievements_by_template[achievement.template.name].append((achievement.team.name, achievement.points))
-
-    # Sort the achievements in the dict, based on score (highest first, etc.)
+        try:
+            game = achievement.game.all().reverse()[0]
+        except:
+            game = None
+        achievements_by_template[achievement.template].append((achievement.team.name, achievement.points, game))
     for k in achievements_by_template.iterkeys():
         achievements_by_template[k] = sorted(achievements_by_template[k], key=lambda listIn: listIn[1], reverse=True)
 

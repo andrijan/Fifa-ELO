@@ -22,5 +22,5 @@ urlpatterns = patterns('',
     url(r'^next_elimination_stage/(?P<tournament_id>\d+)/(?P<current_code>\d+)/$', next_elimination_stage, name='next-elimination-stage'),
     url(r'^next_elimination_stage/(?P<tournament_id>\d+)/$', next_elimination_stage, name='next-elimination-stage'),
 
-    url(r'^view_game/(?P<object_id>\d+)/$', list_detail.object_detail, {'queryset': Game.objects.all(), 'template_name': 'core/view_game.html'}, name='game-info')
+    url(r'^view_game/(?P<object_id>\d+)/$', list_detail.object_detail, {'queryset': Game.objects.all(), 'template_name': 'core/view_game.html'}, name='view-game')
 )
