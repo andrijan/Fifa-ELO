@@ -117,7 +117,10 @@
             {% for team in teams %}
             <tr class="team" id="{{ team.pk }}">
                 <td class="team-id" id="{{ team.pk }}">{{ forloop.counter }}</td>
-                <td><a class="team-name" href="{% url view-team team.pk %}">{{ team.name }}</a>{% for a in team.achievement_set.all %}{% if a.is_highest %}<img title="{{ a.template.name }}" alt="{{a.template.name }}" src="{{ MEDIA_URL }}/{{ a.template.icon }}" />{% endif %}{% endfor %}</td>
+                <td>
+                    <img src="{{ team.favourite_fifa_team.image.url }}" />
+                    <a class="team-name" href="{% url view-team team.pk %}">{{ team.name }}</a>{% for a in team.achievement_set.all %}{% if a.is_highest %}<img title="{{ a.template.name }}" alt="{{a.template.name }}" src="{{ MEDIA_URL }}/{{ a.template.icon }}" />{% endif %}{% endfor %}
+                </td>
                 <td>{{ team.get_latest_points|floatformat:"0"|intcomma }}</td>
                 <td>{{ team.count_games }}</td>
                 <td>{{ team.count_wins }}</td>
@@ -158,7 +161,10 @@
             {% for team in players %}
             <tr class="team">
                 <td class="team-id" id="{{ team.pk }}">{{ forloop.counter }}</td>
-                <td><a class="team-name" href="{% url view-team team.pk %}">{{ team.name }}</a>{% for a in team.achievement_set.all %}{% if a.is_highest %}<img alt="{{ a.template.name }}" title="{{ a.template.name }}" src="{{ MEDIA_URL }}/{{ a.template.icon }}" />{% endif %}{% endfor %}</td>
+                <td>
+                    <img src="{{ team.favourite_fifa_team.image.url }}" />
+                    <a class="team-name" href="{% url view-team team.pk %}">{{ team.name }}</a>{% for a in team.achievement_set.all %}{% if a.is_highest %}<img alt="{{ a.template.name }}" title="{{ a.template.name }}" src="{{ MEDIA_URL }}/{{ a.template.icon }}" />{% endif %}{% endfor %}
+                </td>
                 <td>{{ team.get_latest_points|floatformat:"0"|intcomma }}</td>
                 <td>{{ team.count_games }}</td>
                 <td>{{ team.count_wins }}</td>

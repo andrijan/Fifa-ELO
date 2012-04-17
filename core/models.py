@@ -1,7 +1,7 @@
 import operator
 
 from django.db import models
-from django.db.models import Q, Max
+from django.db.models import Q, Count
 from datetime import datetime, time, timedelta, date
 from compiler import compile
 
@@ -56,8 +56,20 @@ class Team(models.Model):
     image = models.ImageField(upload_to="teams", blank=True, null=True)
 
     def favourite_fifa_team(self):
-        games = self.list_games().aggregate(Max('home_fifa_team'))
-        return games
+        home_games = Game.objects.filter(home_team=self).values('home_fifa_team').annotate(Count('home_fifa_team'))
+        away_games = Game.objects.filter(away_team=self).values('away_fifa_team').annotate(Count('away_fifa_team'))
+        fifa_teams = {}
+        for game in home_games:
+            fifa_teams[game['home_fifa_team']] = game['home_fifa_team__count']
+        for game in away_games:
+            try:
+                fifa_teams[game['away_fifa_team']] += game['away_fifa_team__count']
+            except:
+                fifa_teams[game['away_fifa_team']] = game['away_fifa_team__count']
+
+        fifa_team = FifaTeam.objects.get(pk=max(fifa_teams, key=lambda k: fifa_teams[k]))
+
+        return fifa_team
 
     def valid_game(self, team2):
         for player in self.players.all():
