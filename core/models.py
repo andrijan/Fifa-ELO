@@ -441,7 +441,7 @@ class Achievement(models.Model):
     template = models.ForeignKey(AchievementTemplate, blank=True, null=True)
 
     def is_highest(self):
-        achievements = Achievement.objects.filter(template=self.template)
+        achievements = Achievement.objects.filter(template=self.template, team__is_team=self.team.is_team)
         for a in achievements:
             if a.points > self.points:
                 return False
