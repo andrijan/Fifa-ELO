@@ -118,7 +118,7 @@
             <tr class="team" id="{{ team.pk }}">
                 <td class="team-id" id="{{ team.pk }}">{{ forloop.counter }}</td>
                 <td>
-                    <img src="{{ team.favourite_fifa_team.image.url }}" />
+                    {% if team.favourite_fifa_team %}<img src="{{ team.favourite_fifa_team.image.url }}" />{% endif %}
                     <a class="team-name" href="{% url view-team team.pk %}">{{ team.name }}</a>
                     {% for a in team.achievement_set.all %}
                     {% if a.is_highest %}

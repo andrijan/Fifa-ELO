@@ -67,7 +67,10 @@ class Team(models.Model):
             except:
                 fifa_teams[game['away_fifa_team']] = game['away_fifa_team__count']
 
-        fifa_team = FifaTeam.objects.get(pk=max(fifa_teams, key=lambda k: fifa_teams[k]))
+        try:
+            fifa_team = FifaTeam.objects.get(pk=max(fifa_teams, key=lambda k: fifa_teams[k]))
+        except:
+            fifa_team = None
 
         return fifa_team
 
