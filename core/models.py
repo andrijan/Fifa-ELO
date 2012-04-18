@@ -75,7 +75,7 @@ class Team(models.Model):
             fifa_team = None
 
         if not fifa_team == self.fifa_team:
-            self.fifa_team = fifa_team
+            self.favourite_fifa_team = fifa_team
             self.save()
 
     def valid_game(self, team2):
