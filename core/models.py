@@ -55,7 +55,9 @@ class Team(models.Model):
     is_team = models.BooleanField()
     image = models.ImageField(upload_to="teams", blank=True, null=True)
 
-    def favourite_fifa_team(self):
+    favourite_fifa_team = models.ForeignKey(FifaTeam, blank=True, null=True)
+
+    def find_fifa_team(self):
         home_games = Game.objects.filter(home_team=self).values('home_fifa_team').annotate(Count('home_fifa_team'))
         away_games = Game.objects.filter(away_team=self).values('away_fifa_team').annotate(Count('away_fifa_team'))
         fifa_teams = {}
@@ -72,7 +74,9 @@ class Team(models.Model):
         except:
             fifa_team = None
 
-        return fifa_team
+        if not fifa_team == self.fifa_team:
+            self.favourite_fifa_team = fifa_team
+            self.save()
 
     def valid_game(self, team2):
         for player in self.players.all():
@@ -379,6 +383,9 @@ class Game(models.Model):
             pass
         if self.calculate_points:
             self.check_achievements()
+
+        self.home_team.find_fifa_team()
+        self.away_team.find_fifa_team()
 
 class TournamentGroup(models.Model):
     name = models.CharField("Group name", max_length=255)
