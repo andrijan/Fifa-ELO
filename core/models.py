@@ -74,7 +74,7 @@ class Team(models.Model):
         except:
             fifa_team = None
 
-        if not fifa_team == self.fifa_team:
+        if not fifa_team == self.favourite_fifa_team:
             self.favourite_fifa_team = fifa_team
             self.save()
 
