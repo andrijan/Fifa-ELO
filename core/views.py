@@ -27,13 +27,39 @@ def score(request):
 
 def view_team(request, team_id):
     team = Team.objects.get(pk=team_id)
-    return render_to_response('core/view_team.html', {'team': team},
+    game_list = team.list_games()
+
+    paginator = Paginator(game_list, 15)
+    page = request.GET.get('page', 1)
+
+    try:
+        games = paginator.page(page)
+    except PageNotAnInteger:
+        games = paginator.page(1)
+    except EmptyPage:
+        games = paginator.page(paginator.num_pages)
+
+    ctx = {'team': team, 'games': games}
+    return render_to_response('core/view_team.html', ctx,
                               context_instance=RequestContext(request))
 
 def view_player(request, player_id):
     player = Player.objects.get(pk=player_id)
     team = Team.objects.get(name=player.name)
-    return render_to_response('core/view_player.html', {'player': player, 'team': team},
+    game_list = player.list_games()
+
+    paginator = Paginator(game_list, 15)
+    page = request.GET.get('page', 1)
+
+    try:
+        games = paginator.page(page)
+    except PageNotAnInteger:
+        games = paginator.page(1)
+    except EmptyPage:
+        games = paginator.page(paginator.num_pages)
+
+    ctx = {'player': player, 'team': team, 'games': games}
+    return render_to_response('core/view_player.html', ctx,
                               context_instance=RequestContext(request))
 
 def all_teams(request):

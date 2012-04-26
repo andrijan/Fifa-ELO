@@ -25,73 +25,97 @@
 {% endblock extra_head %}
 {% block main %}
 <div class="row">
-    <div class="span6">
-        <h3>{{ team.name }} - {{ team.get_latest_points|floatformat:0|intcomma }}</h3>
-        {% for player in team.players.all %}
-        {{ player }}<br />
+  <div class="span6">
+    <h3>{{ team.name }} - {{ team.get_latest_points|floatformat:0|intcomma }}</h3>
+    {% for player in team.players.all %}
+    {{ player }}<br />
+    {% endfor %}
+    <div id='chart_div' style='width: 700px; height: 420px;'></div>
+    <h3>Tölfræði</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Heiti</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in team.achievement_set.all %}
+        <tr>
+          <td>{{ a.template.name }}</td>
+          <td>{{ a.points|floatformat:"-2" }}</td>
+        </tr>
         {% endfor %}
-        <div id='chart_div' style='width: 700px; height: 420px;'></div>
-        <h3>Tölfræði</h3>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Heiti</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for a in team.achievement_set.all %}
-                <tr>
-                    <td>{{ a.template.name }}</td>
-                    <td>{{ a.points|floatformat:"-2" }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+      </tbody>
+    </table>
+  </div>
+  <div class="span6">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Dagsetning</th>
+          <th>Mótherji</th>
+          <th>Úrslit</th>
+          <th>Breyting</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for game in games.object_list %}
+        <tr>
+          <td>{{ game.date }}</td>
+          <td>
+            {% ifequal game.home_team team %}
+            <a href="{% url view-team game.away_team.pk %}">{{ game.away_team }}</a>
+            {% else %}
+            <a href="{% url view-team game.home_team.pk %}">{{ game.home_team }}</a>
+            {% endifequal %}
+          </td>
+          <td>
+            {% ifequal game.home_team team %}
+            {{ game.home_score }} - {{ game.away_score }}
+            {% else %}
+            {{ game.away_score }} - {{ game.home_score }}
+            {% endifequal %}
+          </td>
+          <td>
+            {% ifequal game.home_team team %}
+            <span class="label {% if game.points_set.all.0.get_change < 0 %}label-important{% else %}{% if game.points_set.all.0.get_change > 0 %}label-success{%else%}label-info{% endif %}{% endif %}">
+              {{ game.points_set.all.0.get_change|floatformat:2 }}
+            </span>
+            {% else %}
+            <span class="label {% if game.points_set.all.0.get_change < 0 %}label-success{% else %}{% if game.points_set.all.0.get_change > 0 %}label-important{%else%}label-info{% endif %}{% endif %}">
+              {{ game.points_set.all.1.get_change|floatformat:2 }}
+            </span>
+            {% endifequal %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>        
+    <div class="pagination">
+      <ul>
+        {% if games.has_previous %}
+        <li class="prev"><a href="?page={{ games.previous_page_number }}">←  fyrri</a></li>
+        {% else %}
+        <li class="prev disabled"><a href="#">←  fyrri</a></li>
+        {% endif %}
+
+        {% for i in games.paginator.page_range  %}
+        {% if forloop.counter == games.number %}
+        <li class="active"><a href="?page={{ forloop.counter }}">{{ forloop.counter }}</a></li>
+        {% else %}
+        <li><a href="?page={{ forloop.counter }}">{{ forloop.counter }}</a></li>
+        {% endif %}
+        {% endfor %}
+
+        {% if games.has_next %}
+        <li class="next"><a href="?page={{ games.next_page_number }}">næsta →</a></li>
+        {% else %}
+        <li class="next disabled"><a href="#">næsta →</a></li>
+        {% endif %}
+      </ul>
     </div>
-    <div class="span6">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Dagsetning</th>
-                    <th>Mótherji</th>
-                    <th>Úrslit</th>
-                    <th>Breyting</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for game in team.list_games %}
-                <tr>
-                    <td>{{ game.date }}</td>
-                    <td>
-                      {% ifequal game.home_team team %}
-                          <a href="{% url view-team game.away_team.pk %}">{{ game.away_team }}</a>
-                      {% else %}
-                          <a href="{% url view-team game.home_team.pk %}">{{ game.home_team }}</a>
-                      {% endifequal %}
-                    </td>
-                    <td>
-                      {% ifequal game.home_team team %}
-                          {{ game.home_score }} - {{ game.away_score }}
-                      {% else %}
-                          {{ game.away_score }} - {{ game.home_score }}
-                      {% endifequal %}
-                    </td>
-                    <td>
-                      {% ifequal game.home_team team %}
-                          <span class="label {% if game.points_set.all.0.get_change < 0 %}label-important{% else %}{% if game.points_set.all.0.get_change > 0 %}label-success{%else%}label-info{% endif %}{% endif %}">
-                          {{ game.points_set.all.0.get_change|floatformat:2 }}
-                           </span>
-                      {% else %}
-                      <span class="label {% if game.points_set.all.0.get_change < 0 %}label-success{% else %}{% if game.points_set.all.0.get_change > 0 %}label-important{%else%}label-info{% endif %}{% endif %}">
-                          {{ game.points_set.all.1.get_change|floatformat:2 }}
-                      </span>
-                      {% endifequal %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+
+  </div>
 </div>
 {% endblock main %}
