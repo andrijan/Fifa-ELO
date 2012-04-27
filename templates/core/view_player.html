@@ -43,7 +43,9 @@
             <tbody>
                 {% for game in games.object_list %}
                 <tr>
-                    <td>{{ game.date }}</td>
+                    <td>
+                      <a href="{% url view-game game.pk %}">{{ game.date }}</a>
+                    </td>
                     <td>
                       {% if player in game.home_team.players.all %}
                           <a href="{% url view-team game.home_team.pk %}">{{ game.home_team }}</a>

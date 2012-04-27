@@ -62,7 +62,8 @@
       <tbody>
         {% for game in games.object_list %}
         <tr>
-          <td>{{ game.date }}</td>
+          <td>
+            <a href="{% url view-game game.pk %}">{{ game.date }}</td></a>
           <td>
             {% ifequal game.home_team team %}
             <a href="{% url view-team game.away_team.pk %}">{{ game.away_team }}</a>
