@@ -1,5 +1,7 @@
 # Fifa ELO Django Project
 
+Track statistic for EA Sports Fifa game (Or any game for that matter) with help of the Chess scoring system ELO.
+
 ## Installation
 
 1.  Make, enter and activate a virtualenv:
