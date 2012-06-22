@@ -418,7 +418,9 @@ class TournamentGroup(models.Model):
                 except:
                     teams[game.away_team] = 3
         teams = sorted(teams.iteritems(), key=operator.itemgetter(1), reverse=True)
-        return teams
+        import math
+        num_teams = int(2**(math.floor(math.log(len(teams),2))))
+        return teams[0:num_teams]
 
     def add_to_elimination(self):
         teams = self.calculate_places()
