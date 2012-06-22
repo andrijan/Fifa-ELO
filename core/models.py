@@ -315,7 +315,7 @@ class Game(models.Model):
         if self.result:
             return u'%s - %s' % (self.home_score, self.away_score)
         else:
-            return u'Leikur ekki hafinn'
+            return None
 
     def winner(self):
         if self.result == "1":

@@ -36,7 +36,7 @@
             {{ game.away_team }}
           </span>
         </a>
-      <td>{{ game.display_score }}</td>
+        <td>{% if game.display_score %}{{ game.display_score }}{% else %}<a href="{% url admin:core_game_change game.pk %}">Leikur ekki hafinn</a>{% endif %}</td>
     </tr>
     {% endfor %}
   </tbody>
