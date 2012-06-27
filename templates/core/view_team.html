@@ -1,5 +1,5 @@
 {% extends "content.html" %}
-{% load humanize %}
+{% load humanize game_tags %}
 {% block extra_head %}
     <script type='text/javascript' src='http://www.google.com/jsapi'></script>
     <script type='text/javascript'>
@@ -54,6 +54,9 @@
       <thead>
         <tr>
           <th>Dagsetning</th>
+          {% if team.players.all.count == 1 %}
+          <th>Samherji</th>
+          {% endif %}
           <th>Mótherji</th>
           <th>Úrslit</th>
           <th>Breyting</th>
@@ -62,37 +65,48 @@
       <tbody>
         {% for game in games.object_list %}
         <tr>
+            <td><a href="{% url view-game game.pk %}">{{ game.date }}</td></a>
+            {% if team.players.all.count == 1 %}
+            <td>
+                {% if game.home_team.players.all.0 == team.players.all.0 %}
+                {{ game.home_team.players.all.1 }}
+                {% elif game.home_team.players.all.1 == team.players.all.0 %}
+                {{ game.home_team.players.all.0 }}
+                {% elif game.away_team.players.all.0 == team.players.all.0 %}
+                {{ game.away_team.players.all.1 }}
+                {% elif game.away_team.players.all.1 == team.players.all.0 %}
+                {{ game.away_team.players.all.0 }}
+                {% endif %}
+            </td>
+            {% endif %}
+          
           <td>
-            <a href="{% url view-game game.pk %}">{{ game.date }}</td></a>
-          <td>
-            {% ifequal game.home_team team %}
+            {% if team.players.all.0 in game.home_team.players.all %}
             <a href="{% url view-team game.away_team.pk %}">{{ game.away_team }}</a>
             {% else %}
             <a href="{% url view-team game.home_team.pk %}">{{ game.home_team }}</a>
-            {% endifequal %}
+            {% endif %}
           </td>
           <td>
-            {% ifequal game.home_team team %}
+            {% if team.players.all.0 in game.home_team.players.all %}
             {{ game.home_score }} - {{ game.away_score }}
             {% else %}
             {{ game.away_score }} - {{ game.home_score }}
-            {% endifequal %}
+            {% endif %}
           </td>
           <td>
-            {% ifequal game.home_team team %}
-            <span class="label {% if game.points_set.all.0.get_change < 0 %}label-important{% else %}{% if game.points_set.all.0.get_change > 0 %}label-success{%else%}label-info{% endif %}{% endif %}">
-              {{ game.points_set.all.0.get_change|floatformat:2 }}
-            </span>
+            {% if team.players.all.0 in game.home_team.players.all %}
+            <span class="label {% if game.points_set.all|find_game:team < 0 %}label-important{% else %}{% if game.points_set.all|find_game:team > 0 %}label-success{%else%}label-info{% endif %}{% endif %}">
             {% else %}
-            <span class="label {% if game.points_set.all.0.get_change < 0 %}label-success{% else %}{% if game.points_set.all.0.get_change > 0 %}label-important{%else%}label-info{% endif %}{% endif %}">
-              {{ game.points_set.all.1.get_change|floatformat:2 }}
+            <span class="label {% if game.points_set.all|find_game:team < 0 %}label-success{% else %}{% if game.points_set.all.2.get_change < 0 %}label-important{%else%}label-info{% endif %}{% endif %}">
+            {% endif %}
+              {{ game.points_set.all|find_game:team }}
             </span>
-            {% endifequal %}
           </td>
         </tr>
         {% endfor %}
       </tbody>
-    </table>        
+    </table>
     <div class="pagination">
       <ul>
         {% if games.has_previous %}

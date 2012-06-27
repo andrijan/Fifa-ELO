@@ -82,7 +82,7 @@ STATICFILES_DIRS = [
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
-MEDIA_URL = '/assets/uploaded'
+MEDIA_URL = '/media/uploaded/'
 
 # URL that handles the static files like app media.
 # Example: "http://media.lawrence.com"
@@ -110,7 +110,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    #'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 
 INTERNAL_IPS = ('127.0.0.1',)
@@ -129,7 +129,7 @@ CONTEXT_REQUEST_VARS = (
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = [
-    "django.core.context_processors.auth",
+    "django.contrib.auth.context_processors.auth",
     "django.core.context_processors.debug",
     "django.core.context_processors.i18n",
     "django.core.context_processors.media",
@@ -164,7 +164,7 @@ INSTALLED_APPS = (
 
     #Database
     'django_evolution',
-    'debug_toolbar',
+    #'debug_toolbar',
 
     #internal
     'core',

@@ -155,6 +155,60 @@
             </tr>
             {% endfor %}
         </table>
+        <table class="table table-striped table-condensed">
+            <tr>
+                <th>#</th>
+                <th>Einstaklingur</th>
+                <th>Stig</th>
+                <th>Leikir</th>
+                <th>Sigrar</th>
+                <th>Jafntefli</th>
+                <th>Töp</th>
+                <th>Breyting</th>
+                <th>Stig +/-</th>
+            </tr>
+            {% for team in twoplayers %}
+            <tr class="team">
+                <td class="team-id" id="{{ team.pk }}">{{ forloop.counter }}</td>
+                <td>
+                    {% if team.favourite_fifa_team %}<img src="{{ MEDIA_URL }}/{{ team.favourite_fifa_team.image }}" style="height:16px;width:16px;" />{% endif %}
+                    <a class="team-name" href="{% url view-team team.pk %}">{{ team.name }}</a>
+                    {% for a in team.achievement_set.all %}
+                    {% if a.is_highest %}
+                    {% if a.game.all %}
+                    <a href="{% url view-game a.game.all.0.pk %}">
+                        <img title="{{ a.template.name }}" alt="{{a.template.name }}" src="{{ MEDIA_URL }}/{{ a.template.icon }}" />
+                    </a>
+                    {% else %}
+                    <img title="{{ a.template.name }}" alt="{{a.template.name }}" src="{{ MEDIA_URL }}/{{ a.template.icon }}" />
+                    {% endif %}
+                    {% endif %}
+                    {% endfor %}
+                </td>
+                <td>{{ team.get_latest_points|floatformat:"0"|intcomma }}</td>
+                <td>{{ team.count_games }}</td>
+                <td>{{ team.count_wins }}</td>
+                <td>{{ team.count_draws }}</td>
+                <td>{{ team.count_losses }}</td>
+                <td>
+                    {%  ifnotequal team.get_change "same" %}
+                    <img src="
+                        {% ifequal team.get_change "down" %}/assets/static/img/Arrow-Down.png
+                              {% else %}
+                                {% ifequal team.get_change "up" %}/assets/static/img/Arrow-Up.png
+                                {% endifequal %}
+                                {% endifequal %}" style="height:16px;"/>
+                    {% endifnotequal %}
+                </td>
+                <td>
+                    <span class="label
+                        {% if team.get_score_change < 0  %} label-important{% else %}{% if team.get_score_change > 0 %} label-success{% else %} label-info{% endif %}{% endif %}">
+                        {{ team.get_score_change|floatformat:"2" }}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
     </div>
     <div class="span6">
         <table class="table table-striped table-condensed">

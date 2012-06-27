@@ -1,4 +1,49 @@
 {% extends "content.html" %}
+{% block extra_head %}
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.bracket.js"></script>
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/jquery.bracket.css" /></script>
+<script>
+var minimalData = {
+    teams : [
+    {% for team in teams %}
+    ["{{ team.0.name }}", "{{ team.1.name }}"],
+    {% endfor %}
+    ],
+    results : [[
+    {% regroup results_w by round_num as result_list %}
+    {% for result in result_list %}
+    [
+    {% for r in result.list %}
+    {% if r.result %}
+    [{{ r.home_score }}, {{ r.away_score }}],
+    {% else %}
+    [],
+    {% endif %}
+    {% endfor %}
+    ],
+    {% endfor %}
+    ], [
+    {% regroup results_l by round_num as result_list %}
+    {% for result in result_list %}
+    [
+    {% for r in result.list %}
+    {% if r.result %}
+    [{{ r.home_score }}, {{ r.away_score }}],
+    {% else %}
+    [],
+    {% endif %}
+    {% endfor %}
+    ],
+    {% endfor %}
+    ]]
+  }
+ 
+$(document).ready(function() {
+    $('#minimal .demo').bracket({
+      init: minimalData /* data to initialize the bracket with */ })
+  })
+</script>
+{% endblock extra_head %}
 {% block main %}
 <h1>{{ tournament.name }} @ {{ tournament.location }}</h1>
 <div class="well">
@@ -22,23 +67,34 @@
     <tr>
       <td>{{ game.tournamentelimination_set.all.0.status.name }}</td>
       <td>
+        {% if game.home_team %}
         <a href="{% url view-team game.home_team.pk %}">
           <span class="label label-{% ifequal game.winner game.home_team %}success{% else %}{% ifequal game.winner game.away_team %}important{% else %}info{% endifequal %}{% endifequal %}">
             {{ game.home_team }}
           </span>
         </a>
+        {% else %}
+        TBA
+        {% endif %}
       </td>
       <td>{% if game.home_fifa_team %}{{ game.home_fifa_team }}{% endif %}</td>
       <td>{% if game.away_fifa_team %}{{ game.away_fifa_team }}{% endif %}</td>
       <td>
+        {% if game.away_team %}
         <a href="{% url view-team game.away_team.pk %}">
           <span class="label label-{% ifequal game.winner game.away_team %}success{% else %}{% ifequal game.winner game.home_team %}important{% else %}info{% endifequal %}{% endifequal %}">
             {{ game.away_team }}
           </span>
         </a>
+        {% else %}
+        TBA
+        {% endif %}
         <td>{% if game.display_score %}{{ game.display_score }}{% else %}<a href="{% url admin:core_game_change game.pk %}">Leikur ekki hafinn</a>{% endif %}</td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+<div id="minimal">
+    <div class="demo"></div>
+</div>
 {% endblock main %}

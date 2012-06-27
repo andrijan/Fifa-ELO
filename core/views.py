@@ -27,7 +27,7 @@ def score(request):
 
 def view_team(request, team_id):
     team = Team.objects.get(pk=team_id)
-    game_list = team.list_games()
+    game_list = team.list_games(team.is_2player)
 
     paginator = Paginator(game_list, 15)
     page = request.GET.get('page', 1)
@@ -272,8 +272,29 @@ def compare_players(request):
 
 def view_tournament(request, tournament_id):
     tournament = Tournament.objects.get(pk=tournament_id)
+    teams = tournament.teams()
+    tuple_teams = []
+    ctr = 1
+    old_team = ''
+    for team in teams:
+        if ctr % 2 == 0:
+            tuple_teams.append([old_team, team])
+        else:
+            old_team = team
+        ctr += 1
+    results_w, results_l = [],[]
+    games = Game.objects.filter(tournament=tournament)
+    for game in games:
+        if list(game.tournament_code)[0] == 'W':
+            results_w.append({'home_score': game.home_score, 'away_score': game.away_score, 'round_num': list(game.tournament_code)[1], 'result':game.result})
+        else:
+            results_l.append({'home_score': game.home_score, 'away_score': game.away_score, 'round_num': list(game.tournament_code)[1], 'result':game.result})
     ctx = {'tournament': tournament,
+            'teams': tuple_teams,
+            'results_w': results_w,
+            'results_l': results_l,
     }
+    print tuple_teams
 
     return render_to_response('core/view_tournament.html', ctx,
                                 context_instance=RequestContext(request))
@@ -293,13 +314,28 @@ def next_elimination_stage(request, tournament_id, current_code=None):
         tg.add_to_elimination()
         return HttpResponseRedirect(reverse('view-tournament', args=[tournament_id]))
 
-    tes = list(TournamentElimination.objects.filter(game__tournament=tournament, status__code=current_code))
-    new_code = EliminationStatus.objects.get(code=(int(current_code) / 2))
-    while tes:
-        game = Game(home_team=tes.pop(0).game.winner(), away_team=tes.pop().game.winner(), tournament=tournament)
-        game.save()
-        te = TournamentElimination(game=game, status=new_code)
-        te.save()
+    new_code = EliminationStatus
+    if tournament.has_double_elimination:
+        tes = list(TournamentElimination.objects.filter(game__tournament=tournament, status__code__startswith=current_code))
+        while tes:
+            first_game = tes.pop(0).game
+            second_game = tes.pop(0).game
+            if list(current_code)[0] == "W":
+                te = TournamentElimination.objects.get_or_create(game__tournament=tournament, status=list(current_code)[0] + str(int(list(current_code)[1]) + 1))
+                game = Game(home_team=first_game.loser(), away_team=second_game.loser(), tournament=tournament)
+                game.save()
+                te = TournamentElimination(game=game, status='L' + list(current_code)[1])
+                te.save()
+    else:
+        tes = list(TournamentElimination.objects.filter(game__tournament=tournament, status__code=current_code))
+        new_code = EliminationStatus.objects.get(code=(int(current_code) / 2))
+        while tes:
+            first_game = tes.pop(0).game
+            second_game = tes.pop(0).game
+            game = Game(home_team=first_game.winner(), away_team=second_game.winner(), tournament=tournament)
+            game.save()
+            te = TournamentElimination(game=game, status=new_code)
+            te.save()
 
     return HttpResponseRedirect(reverse('view-tournament', args=[tournament_id]))
 
@@ -326,8 +362,9 @@ def game_combinations(request):
 
 
 def home(request):
-    teams = Team.objects.filter(is_team=True)
-    players = Team.objects.filter(is_team=False)
+    teams = Team.objects.filter(is_team=True, is_2player=False)
+    twoplayers = Team.objects.filter(is_2player=True)
+    players = Team.objects.filter(is_team=False, is_2player=False)
     combined = Player.objects.all()
     if 'no_empty' in request.GET:
         for player in players:
@@ -340,9 +377,10 @@ def home(request):
             if team.count_games() == 0:
                 teams = teams.exclude(pk=team.pk)
     teams = sorted(teams, key=lambda t: t.get_latest_points(), reverse=True)
+    twoplayers = sorted(twoplayers, key=lambda t: t.get_latest_points(), reverse=True)
     players = sorted(players, key=lambda t: t.get_latest_points(), reverse=True)
     combined = sorted(combined, key=lambda p: p.win_loss_ratio(), reverse=True)
     points = Points.objects.all() 
-    ctx = {'teams': teams, 'players': players, 'points': points, 'combined': combined}
+    ctx = {'teams': teams, 'players': players, 'points': points, 'combined': combined, 'twoplayers': twoplayers}
     return render_to_response('core/homepage.html', ctx,
                               context_instance=RequestContext(request))

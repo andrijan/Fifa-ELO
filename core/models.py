@@ -1,4 +1,5 @@
 import operator
+import math
 
 from django.db import models
 from django.db.models import Q, Count
@@ -7,6 +8,24 @@ from compiler import compile
 
 MAX = 32
 INITIAL_POINTS = 1500.0
+
+def create_seed_order(bracket_list=[1,2,3,4]):
+    if len(bracket_list):
+        bracket_size = int(2**math.ceil(math.log(len(bracket_list),2)))
+        for i in range(len(bracket_list),bracket_size):
+            bracket_list.append(None)
+    slice = 1
+    while slice < len(bracket_list)/2:
+        temp = bracket_list
+        bracket_list = []
+        while len(temp) > 0:
+            bracket_list.extend(temp[0:slice])
+            del temp[0:slice]
+            bracket_list.extend(temp[-slice:])
+            del temp[-slice:]
+        slice *= 2
+    return bracket_list
+
 
 class FifaTeam(models.Model):
     name = models.CharField("Team name", max_length=255, blank=True, null=True)
@@ -18,21 +37,23 @@ class FifaTeam(models.Model):
 class Player(models.Model):
     name = models.CharField("Team name", max_length=255, blank=True, null=True)
 
+    
+
     def list_games(self):
         games = Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self]) | Q(away_team__players__in=[self])).order_by('-date').distinct()
         return games
 
     def count_games(self):
-        return Game.objects.filter(result__isnull=False).filter(Q(home_team__players=self) | Q(away_team__players=self)).order_by('-date').distinct().count()
+        return Game.objects.filter(result__isnull=False).filter(Q(home_team__players=self) | Q(away_team__players=self)).distinct().count()
 
     def count_wins(self):
-        return Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self], result='1') | Q(away_team__players__in=[self], result='2')).order_by('-date').distinct().count()
+        return Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self], result='1') | Q(away_team__players__in=[self], result='2')).distinct().count()
 
     def count_draws(self):
-        return Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self], result='X') | Q(away_team__players__in=[self], result='X')).order_by('-date').distinct().count()
+        return Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self], result='X') | Q(away_team__players__in=[self], result='X')).distinct().count()
 
     def count_losses(self):
-        return Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self], result='2') | Q(away_team__players__in=[self], result='1')).order_by('-date').distinct().count()
+        return Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self], result='2') | Q(away_team__players__in=[self], result='1')).distinct().count()
 
     def win_loss_ratio(self):
         try:
@@ -44,7 +65,7 @@ class Player(models.Model):
         return self.win_loss_ratio() * 100.0
 
     def team(self):
-        return Team.objects.get(name=self.name)
+        return Team.objects.get(name=self.name, is_2player=False)
 
     def __unicode__(self):
         return u'%s' % self.name
@@ -53,6 +74,7 @@ class Team(models.Model):
     name = models.CharField("Team name", max_length=255, blank=True, null=True)
     players = models.ManyToManyField(Player)
     is_team = models.BooleanField()
+    is_2player = models.BooleanField(default=False)
     image = models.ImageField(upload_to="teams", blank=True, null=True)
 
     favourite_fifa_team = models.ForeignKey(FifaTeam, blank=True, null=True)
@@ -134,16 +156,16 @@ class Team(models.Model):
         return current - old
 
     def count_games(self):
-        return self.home_team.filter(result__isnull=False).count() + self.away_team.filter(result__isnull=False).count()
+        return self.list_home_games().count() + self.list_away_games().count()
 
     def count_wins(self):
-        return self.home_team.filter(result='1').count() + self.away_team.filter(result='2').count()
+        return self.list_home_games(result='1').count() + self.list_away_games(result='2').count()
 
     def count_draws(self):
-        return self.home_team.filter(result='X').count() + self.away_team.filter(result='X').count()
+        return self.list_home_games(result='X').count() + self.list_away_games(result='X').count()
 
     def count_losses(self):
-        return self.home_team.filter(result='2').count() + self.away_team.filter(result='1').count()
+        return self.list_home_games(result='2').count() + self.list_away_games(result='1').count()
 
     def count_goals(self):
         goals = 0
@@ -161,16 +183,35 @@ class Team(models.Model):
             goals += game.home_goals
         return goals
 
-    def list_games(self):
-        games = Game.objects.filter(result__isnull=False).filter(Q(home_team=self) | Q(away_team=self)).order_by('-date')
+    def list_games(self, twoplayer=False):
+        twoplayer = self.is_2player
+        if not twoplayer:
+            games = Game.objects.filter(result__isnull=False).filter(Q(home_team=self) | Q(away_team=self)).order_by('-date')
+        else:
+            games = TwoPlayerGame.objects.filter(game__result__isnull=False).filter(Q(home_teams__in=[self]) | Q(away_teams__in=[self])).order_by('-game__date').distinct()
+            return [game.game for game in games]
         return games
 
-    def list_home_games(self):
-        games = Game.objects.filter(result__isnull=False, home_team=self).order_by('-date')
+    def list_home_games(self, result=None):
+        if self.is_2player:
+            games = self.home_teams.filter(game__result__isnull=False).order_by('-date')
+            if result:
+                games = games.filter(game__result=result)
+        else:
+            games = self.home_team.filter(result__isnull=False).order_by('-date')
+            if result:
+                games = games.filter(result=result)
         return games
 
-    def list_away_games(self):
-        games = Game.objects.filter(result__isnull=False, away_team=self).order_by('-date')
+    def list_away_games(self, result=None):
+        if self.is_2player:
+            games = self.away_teams.filter(game__result__isnull=False).order_by('-date')
+            if result:
+                games = games.filter(game__result=result)
+        else:
+            games = self.away_team.filter(result__isnull=False).order_by('-date')
+            if result:
+                games = games.filter(result=result)
         return games
 
     def longest_win_streak(self):
@@ -267,13 +308,14 @@ class Tournament(models.Model):
     location = models.CharField("Location", max_length=255, blank=True, null=True)
     players = models.ManyToManyField(Player)
     is_team = models.BooleanField(default=True)
+    has_groups = models.BooleanField()
+    has_double_elimination = models.BooleanField()
 
     def __unicode__(self):
         return u'%s' % self.name
 
-    def clean(self, *args, **kwargs):
-        super(Tournament, self).save(*args, **kwargs)
-        players = sorted(self.players.all(), key=lambda p: p.team().get_latest_points(), reverse=True)
+    def teams(self):
+        players = sorted(self.players.all(), key=lambda p: p.team().get_latest_points(), reverse=False)
         teams = []
         if self.is_team:
             while players:
@@ -281,23 +323,41 @@ class Tournament(models.Model):
         else:
             while players:
                 teams.append(Team.objects.get(players__in=[players.pop()], is_team=False))
-        try:
-            group = TournamentGroup.objects.get(name="Group A", tournament=self)
-        except:
-            group = TournamentGroup(name="Group A", tournament=self)
-            group.save()
-        for round_num in roundRobin(teams):
-            for g in round_num:
-                if g[0] is not None and g[1] is not None:
-                    game = Game(home_team=g[0], away_team=g[1], tournament=self)
+        teams = create_seed_order(teams)
+        return teams
+
+
+    def clean(self, *args, **kwargs):
+        super(Tournament, self).save(*args, **kwargs)
+        teams = self.teams()
+        if self.has_groups:
+            try:
+                group = TournamentGroup.objects.get(name="Group A", tournament=self)
+            except:
+                group = TournamentGroup(name="Group A", tournament=self)
+                group.save()
+            for round_num in roundRobin(teams):
+                for g in round_num:
+                    if g[0] is not None and g[1] is not None:
+                        game = Game(home_team=g[0], away_team=g[1], tournament=self)
+                        game.save()
+                        group.games.add(game)
+                        group.save()
+        elif self.has_double_elimination:
+            ctr = 1
+            old_team = None
+            for team in teams:
+                if ctr % 2 == 0:
+                    game = Game(home_team=old_team, away_team=team, tournament=self, tournament_code='W1G' + str(ctr/2))
                     game.save()
-                    group.games.add(game)
-                    group.save()
+                else:
+                    old_team = team
+                ctr += 1
 
 
 class Game(models.Model):
-    home_team = models.ForeignKey(Team, related_name="home_team")
-    away_team = models.ForeignKey(Team, related_name="away_team")
+    home_team = models.ForeignKey(Team, related_name="home_team", blank=True, null=True)
+    away_team = models.ForeignKey(Team, related_name="away_team", blank=True, null=True)
     home_fifa_team = models.ForeignKey(FifaTeam, related_name="home_fifa_team", blank=True, null=True)
     away_fifa_team = models.ForeignKey(FifaTeam, related_name="away_fifa_team", blank=True, null=True)
     date = models.DateTimeField("Date of game", auto_now_add=True)
@@ -306,6 +366,7 @@ class Game(models.Model):
     away_score = models.IntegerField(blank=True, null=True)
     date_played = models.DateTimeField("Playtime of game", auto_now=True, blank=True, null=True)
     tournament = models.ForeignKey(Tournament, blank=True, null=True)
+    tournament_code = models.CharField(max_length=255, blank=True, null=True)
     calculate_points = models.BooleanField(default=False)
 
     def __unicode__(self):
@@ -323,6 +384,22 @@ class Game(models.Model):
         elif self.result == "2":
             return self.away_team
         return None
+
+    def loser(self):
+        if self.result == "2":
+            return self.home_team
+        elif self.result == "1":
+            return self.away_team
+        return None
+
+    def eliminiation_game(self):
+        if self.tournamentelimination_set.all().count() > 0:
+            return self.tournamentelimination_set.all()[0]
+        else:
+            return False
+
+    def num_first_round_games(self):
+        return Game.objects.filter(tournament=self.tournament, tournament_code__startswith='W1').count()
 
     def check_achievements(self, team=None):
         for template in AchievementTemplate.objects.all():
@@ -352,6 +429,50 @@ class Game(models.Model):
                     achievement.save()
 
     def save(self, *args, **kwargs):
+        if self.tournament and self.result:
+            code = list(self.tournament_code)
+            bracket = code[0]
+            b_round = code[1]
+            b_game= code[3]
+            num_games = self.num_first_round_games()
+            if bracket == 'W':
+                new_bracket = 'L'
+                home_team = True
+                if int(b_round) % 2 == 0:
+                    game_list = range(1,(num_games / int(b_round))+1)
+                    reverse_game_list = list(reversed(game_list))
+                    z = dict(zip(game_list, reverse_game_list))
+                    new_game = str(z[int(b_game)])
+                    home_team = False
+                else:
+                    if int(b_game) % 2 == 0:
+                        home_team = False
+                    else:
+                        home_team = True
+                    new_game = str((int(b_game)+1)/2)
+                game, created = Game.objects.get_or_create(tournament=self.tournament, tournament_code=new_bracket + b_round + 'G' + new_game)
+                if home_team:
+                    game.home_team = self.loser()
+                else:
+                    game.away_team = self.loser()
+                game.save()
+                new_game = str((int(b_game)+1)/2)
+            else:
+                if int(b_round) % 2 == 0:
+                    new_game = str((int(b_game)+1)/2)
+                else:
+                    new_game = b_game
+            game, created = Game.objects.get_or_create(tournament=self.tournament, tournament_code=bracket + str(int(b_round)+1) + 'G' + new_game)
+            if int(b_game) % 2 != 0:
+                game.home_team = self.winner()
+            else:
+                if bracket == 'L':
+                    game.home_team = self.winner()
+                else:
+                    game.away_team = self.winner()
+            game.save()
+
+
         if self.calculate_points and Points.objects.filter(game=self).count() == 0:
             if self.result == '1':
                 result = 1
@@ -359,12 +480,37 @@ class Game(models.Model):
                 result = 0.5
             else:
                 result = 0
+
+            if self.home_team.count_games() <= 30:
+                home_k_value = 32
+            elif self.home_team.count_games() <= 100:
+                home_k_value = 24
+            else:
+                if self.home_team.get_latest_points() < 1650:
+                    home_k_value = 16
+                elif self.home_team.get_latest_points() < 1800:
+                    home_k_value = 12
+                else:
+                    home_k_value = 10
+
+            if self.away_team.count_games() <= 30:
+                away_k_value = 32
+            elif self.away_team.count_games() <= 100:
+                away_k_value = 24
+            else:
+                if self.away_team.get_latest_points() < 1650:
+                    away_k_value = 16
+                elif self.away_team.get_latest_points() < 1800:
+                    away_k_value = 12
+                else:
+                    away_k_value = 10
+
             p1 = self.home_team.get_latest_points()
             p2 = self.away_team.get_latest_points()
             e1 = 1/(1+10**((p2-p1)/400))
             e2 = 1/(1+10**((p1-p2)/400))
-            p1new = p1+32*(result-e1)
-            p2new = p2+32*(1-result-e2)
+            p1new = p1+home_k_value*(result-e1)
+            p2new = p2+away_k_value*(1-result-e2)
             np1 = Points(team=self.home_team,points=p1new)
             np1.save()
             np2 = Points(team=self.away_team,points=p2new)
@@ -384,8 +530,108 @@ class Game(models.Model):
         if self.calculate_points:
             self.check_achievements()
 
-        self.home_team.find_fifa_team()
-        self.away_team.find_fifa_team()
+        if self.result:
+            self.home_team.find_fifa_team()
+            self.away_team.find_fifa_team()
+
+            if self.home_team.is_team:
+                TwoPlayerGame.objects.create(game=self)
+
+class TwoPlayerGame(models.Model):
+    game = models.ForeignKey(Game)
+    home_teams = models.ManyToManyField(Team, related_name="home_teams")
+    away_teams = models.ManyToManyField(Team, related_name="away_teams")
+
+    def __unicode__(self):
+        return u'%s - 2 player' % self.game
+
+    def home_team(self):
+        return Team.objects.filter(players__in=[self.home_teams.all()[0].players.all()[0]]).get(players__in=[self.home_teams.all()[1].players.all()[0]])
+
+    def save(self, *args, **kwargs):
+        super(TwoPlayerGame, self).save(*args, **kwargs)
+        for p in self.game.home_team.players.all():
+            team, created = Team.objects.get_or_create(name=p.name, is_2player=True)
+            if created:
+                team.players.add(p)
+                team.save()
+            self.home_teams.add(team)
+        for p in self.game.away_team.players.all():
+            team, created = Team.objects.get_or_create(name=p.name, is_2player=True)
+            if created:
+                team.players.add(p)
+                team.save()
+            self.away_teams.add(team)
+        combo1_ave = sum(t.get_latest_points() for t in self.home_teams.all()) / self.home_teams.all().count()
+        combo2_ave = sum(t.get_latest_points() for t in self.away_teams.all()) / self.home_teams.all().count()
+        if self.game.result == '1':
+            result = 1
+        elif self.game.result == 'X':
+            result = 0.5
+        else:
+            result = 0
+        e1 = 1/(1+10**((combo2_ave-combo1_ave)/400))
+        e2 = 1/(1+10**((combo1_ave-combo2_ave)/400))
+
+
+        t1 = self.home_teams.all()[0]
+        t2 = self.home_teams.all()[1]
+        t3 = self.away_teams.all()[0]
+        t4 = self.away_teams.all()[1]
+
+        for team in [t1,t2]:
+            if team.count_games() <= 30:
+                team_k_value = 32
+            elif team.count_games() <= 100:
+                team_k_value = 24
+            else:
+                if team.get_latest_points() < 1650:
+                    team_k_value = 16
+                elif team.get_latest_points() < 1800:
+                    team_k_value = 12
+                else:
+                    team_k_value = 10
+            team_points = team_k_value*(result-e1)
+            team_points_new = team.get_latest_points() + team_points
+            np = Points(team=team, points=team_points_new, game=self.game)
+            np.save()
+
+        for team in [t3,t4]:
+            if team.count_games() <= 30:
+                team_k_value = 32
+            elif team.count_games() <= 100:
+                team_k_value = 24
+            else:
+                if team.get_latest_points() < 1650:
+                    team_k_value = 16
+                elif team.get_latest_points() < 1800:
+                    team_k_value = 12
+                else:
+                    team_k_value = 10
+            team_points = team_k_value*(1-result-e2)
+            team_points_new = team.get_latest_points() + team_points
+            np = Points(team=team, points=team_points_new, game=self.game)
+            np.save()
+        """
+        team1_points = 32*(result-e1)
+        team2_points = 32*(1-result-e2)
+
+        team1_e = 1/(1+10**((t1.get_latest_points()-t2.get_latest_points())/400))
+        p1new = t1.get_latest_points() + team1_points*team1_e
+        p2new = t2.get_latest_points() + team1_points*(1-team1_e)
+        team2_e = 1/(1+10**((t3.get_latest_points()-t4.get_latest_points())/400))
+        p3new = t3.get_latest_points() + team2_points*team2_e
+        p4new = t4.get_latest_points() + team2_points*(1-team2_e)
+
+        np1 = Points(team=t1,points=p1new, game=self.game)
+        np1.save()
+        np2 = Points(team=t2,points=p2new, game=self.game)
+        np2.save()
+        np3 = Points(team=t3,points=p3new, game=self.game)
+        np3.save()
+        np4 = Points(team=t4,points=p4new, game=self.game)
+        np4.save()
+        """
 
 class TournamentGroup(models.Model):
     name = models.CharField("Group name", max_length=255)
@@ -445,6 +691,7 @@ class EliminationStatus(models.Model):
 class TournamentElimination(models.Model):
     game = models.ForeignKey(Game)
     status = models.ForeignKey(EliminationStatus)
+    double = models.BooleanField(default=False)
 
     def __unicode__(self):
         return u'%s - %s' % (self.game, self.status.name)
