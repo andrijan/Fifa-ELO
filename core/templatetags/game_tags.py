@@ -4,5 +4,8 @@ register = template.Library()
 
 @register.filter
 def find_game(points, team):
-    return round(points.get(team=team).get_change(),2)
+    try:
+        return round(points.get(team=team).get_change(),2)
+    except:
+        return None
 
