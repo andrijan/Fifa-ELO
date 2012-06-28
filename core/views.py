@@ -294,10 +294,26 @@ def view_tournament(request, tournament_id):
             'results_w': results_w,
             'results_l': results_l,
     }
-    print tuple_teams
 
     return render_to_response('core/view_tournament.html', ctx,
                                 context_instance=RequestContext(request))
+
+def play_tournament_matches(request, tournament_id):
+    tournament = Tournament.objects.get(pk=tournament_id)
+    steinar = Team.objects.get(name="Steinar")
+    games = Game.objects.filter(tournament=tournament, home_team=steinar, away_team__isnull=False, result__isnull=True)
+    for game in games:
+        game.result = "2"
+        game.home_score = 0
+        game.away_score = 1
+        game.save()
+    games = Game.objects.filter(tournament=tournament, away_team=steinar, home_team__isnull=False, result__isnull=True)
+    for game in games:
+        game.result = "1"
+        game.home_score = 1
+        game.away_score = 0
+        game.save()
+    return HttpResponseRedirect(reverse('view-tournament', args=[tournament_id]))
 
 def list_tournaments(request):
     tournaments = Tournament.objects.all()

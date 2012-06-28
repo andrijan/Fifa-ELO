@@ -13,7 +13,7 @@ def create_seed_order(bracket_list=[1,2,3,4]):
     if len(bracket_list):
         bracket_size = int(2**math.ceil(math.log(len(bracket_list),2)))
         for i in range(len(bracket_list),bracket_size):
-            bracket_list.append(None)
+            bracket_list.append(Team.objects.get(name="Steinar"))
     slice = 1
     while slice < len(bracket_list)/2:
         temp = bracket_list
