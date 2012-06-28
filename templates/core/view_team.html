@@ -98,7 +98,7 @@
             {% if team.players.all.0 in game.home_team.players.all %}
             <span class="label {% if game.points_set.all|find_game:team < 0 %}label-important{% else %}{% if game.points_set.all|find_game:team > 0 %}label-success{%else%}label-info{% endif %}{% endif %}">
             {% else %}
-            <span class="label {% if game.points_set.all|find_game:team < 0 %}label-success{% else %}{% if game.points_set.all.2.get_change < 0 %}label-important{%else%}label-info{% endif %}{% endif %}">
+            <span class="label {% if game.points_set.all|find_game:team > 0 %}label-success{% else %}{% if game.points_set.all|find_game:team < 0 %}label-important{%else%}label-info{% endif %}{% endif %}">
             {% endif %}
               {{ game.points_set.all|find_game:team }}
             </span>
