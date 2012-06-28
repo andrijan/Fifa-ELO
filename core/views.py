@@ -272,7 +272,12 @@ def compare_players(request):
 
 def view_tournament(request, tournament_id):
     tournament = Tournament.objects.get(pk=tournament_id)
-    teams = tournament.teams()
+    games = Game.objects.filter(tournament=tournament, tournament_code__startswith='W1')
+    teams = []
+    for game in games:
+        teams.append(game.home_team)
+        teams.append(game.away_team)
+    #teams = tournament.teams()
     tuple_teams = []
     ctr = 1
     old_team = ''
