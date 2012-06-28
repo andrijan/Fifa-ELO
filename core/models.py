@@ -322,7 +322,7 @@ class Tournament(models.Model):
                 teams.append(Team.objects.filter(players__in=[players.pop(0)]).get(players__in=[players.pop()]))
         else:
             while players:
-                teams.append(Team.objects.get(players__in=[players.pop()], is_team=False))
+                teams.append(Team.objects.get(players__in=[players.pop()], is_2player=False, is_team=False))
         teams = create_seed_order(teams)
         return teams
 
