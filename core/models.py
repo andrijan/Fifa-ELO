@@ -464,7 +464,7 @@ class Game(models.Model):
                     new_game = b_game
             game, created = Game.objects.get_or_create(tournament=self.tournament, tournament_code=bracket + str(int(b_round)+1) + 'G' + new_game)
             if int(b_game) % 2 != 0:
-                game.home_team = self.winner()
+                game.away_team = self.winner()
             else:
                 if bracket == 'L':
                     game.home_team = self.winner()
