@@ -26,6 +26,10 @@ def create_seed_order(bracket_list=[1,2,3,4]):
         slice *= 2
     return bracket_list
 
+def F(n):
+    if n == 1: return 1
+    elif n == 2: return 2
+    else: return F(n-1)+2
 
 class FifaTeam(models.Model):
     name = models.CharField("Team name", max_length=255, blank=True, null=True)
@@ -444,7 +448,8 @@ class Game(models.Model):
                     new_game = str(z[int(b_game)])
                 else:
                     new_game = str((int(b_game)+1)/2)
-                game, created = Game.objects.get_or_create(tournament=self.tournament, tournament_code=new_bracket + b_round + 'G' + new_game)
+                new_round = F(b_round)
+                game, created = Game.objects.get_or_create(tournament=self.tournament, tournament_code=new_bracket + new_round + 'G' + new_game)
                 game.away_team = self.loser()
                 game.save()
                 new_game = str((int(b_game)+1)/2)
@@ -461,6 +466,7 @@ class Game(models.Model):
             elif int(b_game) % 2 != 0:
                 game.home_team = self.winner()
             game.save()
+            print game
 
 
         if self.calculate_points and Points.objects.filter(game=self).count() == 0:
