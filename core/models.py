@@ -437,24 +437,15 @@ class Game(models.Model):
             num_games = self.num_first_round_games()
             if bracket == 'W':
                 new_bracket = 'L'
-                home_team = True
                 if int(b_round) % 2 == 0:
                     game_list = range(1,(num_games / int(b_round))+1)
                     reverse_game_list = list(reversed(game_list))
                     z = dict(zip(game_list, reverse_game_list))
                     new_game = str(z[int(b_game)])
-                    home_team = False
                 else:
-                    if int(b_game) % 2 == 0:
-                        home_team = False
-                    else:
-                        home_team = True
                     new_game = str((int(b_game)+1)/2)
                 game, created = Game.objects.get_or_create(tournament=self.tournament, tournament_code=new_bracket + b_round + 'G' + new_game)
-                if home_team:
-                    game.home_team = self.loser()
-                else:
-                    game.away_team = self.loser()
+                game.away_team = self.loser()
                 game.save()
                 new_game = str((int(b_game)+1)/2)
             else:
@@ -463,13 +454,12 @@ class Game(models.Model):
                 else:
                     new_game = b_game
             game, created = Game.objects.get_or_create(tournament=self.tournament, tournament_code=bracket + str(int(b_round)+1) + 'G' + new_game)
-            if int(b_game) % 2 != 0:
+            if int(b_round) % 2 != 0 and bracket == 'L':
+                game.home_team = self.winner()
+            elif int(b_game) % 2 == 0:
                 game.away_team = self.winner()
-            else:
-                if bracket == 'L':
-                    game.home_team = self.winner()
-                else:
-                    game.away_team = self.winner()
+            elif int(b_game) % 2 != 0:
+                game.home_team = self.winner()
             game.save()
 
 
