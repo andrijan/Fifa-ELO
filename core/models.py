@@ -448,7 +448,7 @@ class Game(models.Model):
                     new_game = str(z[int(b_game)])
                 else:
                     new_game = str((int(b_game)+1)/2)
-                new_round = F(b_round)
+                new_round = str(F(int(b_round)))
                 game, created = Game.objects.get_or_create(tournament=self.tournament, tournament_code=new_bracket + new_round + 'G' + new_game)
                 game.away_team = self.loser()
                 game.save()
