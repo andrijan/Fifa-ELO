@@ -288,7 +288,7 @@ def view_tournament(request, tournament_id):
             old_team = team
         ctr += 1
     results_w, results_l = [],[]
-    games = Game.objects.filter(tournament=tournament)
+    games = Game.objects.filter(tournament=tournament).order_by('tournament_code')
     for game in games:
         if list(game.tournament_code)[0] == 'W':
             results_w.append({'home_score': game.home_score, 'away_score': game.away_score, 'round_num': list(game.tournament_code)[1], 'result':game.result})
