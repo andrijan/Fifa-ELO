@@ -599,14 +599,16 @@
 
     function winnerBubbles(el) { 
         var winner = el.find('.team.win')
-        winner.append('<div class="bubble">1st</div>')
+        //winner.append('<div class="bubble"></div>')
         var loser = el.find('.team.lose')
-        loser.append('<div class="bubble">2nd</div>')
+        //loser.append('<div class="bubble"></div>')
     }
 
     function consolidationBubbles(el) { 
       var winner = el.find('.team.win')
-      winner.append('<div class="bubble">3rd</div>')
+      winner.append('<div class="bubble">1st</div>')
+      var loser = el.find('.team.lose')
+      loser.append('<div class="bubble">2nd</div>')
     }
 
     function prepareWinners(winners, data, isSingleElimination)
@@ -761,7 +763,7 @@
       var height
 
       var fourth = losers.final().round().prev().match(0).loser
-      var consol = round.addMatch(function() { return [{source: fourth}, {source: losers.loser}] },
+      var consol = round.addMatch(function() { return [{source: finals.winner}, {source: finals.loser}] },
                                   consolidationBubbles)
       consol.setAlignCb(function(tC) {
         var height = (winners.el.height()+losers.el.height())/2

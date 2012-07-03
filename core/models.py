@@ -371,7 +371,7 @@ class Game(models.Model):
     date_played = models.DateTimeField("Playtime of game", auto_now=True, blank=True, null=True)
     tournament = models.ForeignKey(Tournament, blank=True, null=True)
     tournament_code = models.CharField(max_length=255, blank=True, null=True)
-    calculate_points = models.BooleanField(default=False)
+    calculate_points = models.BooleanField(default=True)
 
     def __unicode__(self):
         return u'%s: %s - %s' % (self.date, self.home_team, self.away_team)
@@ -404,6 +404,20 @@ class Game(models.Model):
 
     def num_first_round_games(self):
         return Game.objects.filter(tournament=self.tournament, tournament_code__startswith='W1').count()
+
+    def is_winners_finals(self):
+        code = list(self.tournament_code)
+        b_round = int(code[1])
+        if 2**(b_round-1) == self.num_first_round_games() and code[0] == 'W':
+            return True
+        return False
+
+    def is_losers_finals(self):
+        code = list(self.tournament_code)
+        b_round = int(code[1])
+        if math.log(self.num_first_round_games())*2 == b_round and code[0] == 'L':
+            return True
+        return False
 
     def check_achievements(self, team=None):
         for template in AchievementTemplate.objects.all():
@@ -453,21 +467,36 @@ class Game(models.Model):
                 game.away_team = self.loser()
                 game.save()
                 new_game = str((int(b_game)+1)/2)
+            elif bracket == 'F':
+                if self.winner() == self.home_team:
+                    pass
+                else:
+                    game = Game(tournament=self.tournament, tournament_code='F1G2')
+                    game.home_team = self.winner()
+                    game.away_team = self.loser()
+                    game.save()
             else:
                 if int(b_round) % 2 == 0:
                     new_game = str((int(b_game)+1)/2)
                 else:
                     new_game = b_game
-            game, created = Game.objects.get_or_create(tournament=self.tournament, tournament_code=bracket + str(int(b_round)+1) + 'G' + new_game)
-            if int(b_round) % 2 != 0 and bracket == 'L':
+            if self.is_winners_finals():
+                game, created = Game.objects.get_or_create(tournament=self.tournament, tournament_code='F1G1')
                 game.home_team = self.winner()
-            elif int(b_game) % 2 == 0:
+                game.save()
+            elif self.is_losers_finals():
+                game, created = Game.objects.get_or_create(tournament=self.tournament, tournament_code='F1G1')
                 game.away_team = self.winner()
-            elif int(b_game) % 2 != 0:
-                game.home_team = self.winner()
-            game.save()
-            print game
-
+                game.save()
+            elif bracket != "F":
+                game, created = Game.objects.get_or_create(tournament=self.tournament, tournament_code=bracket + str(int(b_round)+1) + 'G' + new_game)
+                if int(b_round) % 2 != 0 and bracket == 'L':
+                    game.home_team = self.winner()
+                elif int(b_game) % 2 == 0:
+                    game.away_team = self.winner()
+                elif int(b_game) % 2 != 0:
+                    game.home_team = self.winner()
+                game.save()
 
         if self.calculate_points and Points.objects.filter(game=self).count() == 0:
             if self.result == '1':
@@ -660,7 +689,6 @@ class TournamentGroup(models.Model):
                 except:
                     teams[game.away_team] = 3
         teams = sorted(teams.iteritems(), key=operator.itemgetter(1), reverse=True)
-        import math
         num_teams = int(2**(math.floor(math.log(len(teams),2))))
         return teams[0:num_teams]
 

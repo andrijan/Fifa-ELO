@@ -35,6 +35,19 @@ var minimalData = {
     {% endfor %}
     ],
     {% endfor %}
+    ], [
+    {% regroup results_f by round_num as result_list %}
+    {% for result in result_list %}
+    [
+    {% for r in result.list %}
+    {% if r.result %}
+    [{{ r.home_score }}, {{ r.away_score }}],
+    {% else %}
+    [],
+    {% endif %}
+    {% endfor %}
+    ],
+    {% endfor %}
     ]]
   }
  
@@ -46,10 +59,15 @@ $(document).ready(function() {
 {% endblock extra_head %}
 {% block main %}
 <h1>{{ tournament.name }} @ {{ tournament.location }}</h1>
+{% comment %}
 <div class="well">
   <a href="{% url next-elimination-stage tournament.pk %}" class="btn btn-primary">Útsláttur</a>
   <a href="{% url next-elimination-stage tournament.pk 8 %}" class="btn btn-primary">Undanúrslit</a>
   <a href="{% url next-elimination-stage tournament.pk 4 %}" class="btn btn-primary">Úrslit</a>
+</div>
+{% endcomment %}
+<div id="minimal">
+    <div class="demo"></div>
 </div>
 <table class="table">
   <thead>
@@ -64,6 +82,7 @@ $(document).ready(function() {
   </thead>
   <tbody>
     {% for game in tournament.game_set.all %}
+    {% if not game.result %}
     <tr>
       <td>{{ game.tournamentelimination_set.all.0.status.name }}</td>
       <td>
@@ -91,10 +110,8 @@ $(document).ready(function() {
         {% endif %}
         <td>{% if game.display_score %}{{ game.display_score }}{% else %}<a href="{% url admin:core_game_change game.pk %}">Leikur ekki hafinn</a>{% endif %}</td>
     </tr>
+    {% endif %}
     {% endfor %}
   </tbody>
 </table>
-<div id="minimal">
-    <div class="demo"></div>
-</div>
 {% endblock main %}

@@ -287,17 +287,20 @@ def view_tournament(request, tournament_id):
         else:
             old_team = team
         ctr += 1
-    results_w, results_l = [],[]
+    results_w, results_l, results_f = [],[],[]
     games = Game.objects.filter(tournament=tournament).order_by('tournament_code')
     for game in games:
         if list(game.tournament_code)[0] == 'W':
             results_w.append({'home_score': game.home_score, 'away_score': game.away_score, 'round_num': list(game.tournament_code)[1], 'result':game.result})
-        else:
+        elif list(game.tournament_code)[0] == 'L':
             results_l.append({'home_score': game.home_score, 'away_score': game.away_score, 'round_num': list(game.tournament_code)[1], 'result':game.result})
+        else:
+            results_f.append({'home_score': game.home_score, 'away_score': game.away_score, 'round_num': list(game.tournament_code)[1], 'result':game.result})
     ctx = {'tournament': tournament,
             'teams': tuple_teams,
             'results_w': results_w,
             'results_l': results_l,
+            'results_f': results_f,
     }
 
     return render_to_response('core/view_tournament.html', ctx,
