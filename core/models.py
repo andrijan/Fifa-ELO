@@ -40,38 +40,22 @@ class FifaTeam(models.Model):
 
 class Player(models.Model):
     name = models.CharField("Team name", max_length=255, blank=True, null=True)
-    num_games = models.IntegerField(blank=True, null=True)
-    num_wins = models.IntegerField(blank=True, null=True)
-    num_draws = models.IntegerField(blank=True, null=True)
-    num_losses = models.IntegerField(blank=True, null=True)
 
     def list_games(self):
         games = Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self]) | Q(away_team__players__in=[self])).order_by('-date').distinct()
         return games
 
     def count_games(self):
-        if not self.num_games:
-            self.num_games = Game.objects.filter(result__isnull=False).filter(Q(home_team__players=self) | Q(away_team__players=self)).distinct().count()
-            self.save()
-        return self.num_games
+        return Game.objects.filter(result__isnull=False).filter(Q(home_team__players=self) | Q(away_team__players=self)).distinct().count()
 
     def count_wins(self):
-        if not self.num_wins:
-            self.num_wins = Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self], result='1') | Q(away_team__players__in=[self], result='2')).distinct().count()
-            self.save()
-        return self.num_wins
+        return Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self], result='1') | Q(away_team__players__in=[self], result='2')).distinct().count()
 
     def count_draws(self):
-        if not self.num_draws:
-            self.num_draws = Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self], result='X') | Q(away_team__players__in=[self], result='X')).distinct().count()
-            self.save()
-        return self.num_draws
+        return Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self], result='X') | Q(away_team__players__in=[self], result='X')).distinct().count()
 
     def count_losses(self):
-        if not self.num_losses:
-            self.num_losses = Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self], result='2') | Q(away_team__players__in=[self], result='1')).distinct().count()
-            self.save()
-        return self.num_losses
+        return Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self], result='2') | Q(away_team__players__in=[self], result='1')).distinct().count()
 
     def win_loss_ratio(self):
         try:
@@ -179,28 +163,16 @@ class Team(models.Model):
         return current - old
 
     def count_games(self):
-        if not self.num_games:
-            self.num_games = self.list_home_games().count() + self.list_away_games().count()
-            self.save()
-        return self.num_games
+        return self.list_home_games().count() + self.list_away_games().count()
 
     def count_wins(self):
-        if not self.num_wins:
-            self.num_wins = self.list_home_games(result='1').count() + self.list_away_games(result='2').count()
-            self.save()
-        return self.num_wins
+        return self.list_home_games(result='1').count() + self.list_away_games(result='2').count()
 
     def count_draws(self):
-        if not self.num_draws:
-            self.num_draws = self.list_home_games(result='X').count() + self.list_away_games(result='X').count()
-            self.save()
-        return self.num_draws
+        return self.list_home_games(result='X').count() + self.list_away_games(result='X').count()
 
     def count_losses(self):
-        if not self.num_losses:
-            self.num_losses = self.list_home_games(result='2').count() + self.list_away_games(result='1').count()
-            self.save()
-        return self.num_losses
+        return self.list_home_games(result='2').count() + self.list_away_games(result='1').count()
 
     def count_goals(self):
         goals = 0
@@ -549,11 +521,64 @@ class Game(models.Model):
                 game.save()
 
         if self.calculate_points and Points.objects.filter(game=self).count() == 0:
+            home_team, created = TeamTableSnapshot.objects.get_or_create(team=self.home_team)
+            if created:
+                home_team.is_team = self.home_team.is_team
+                home_team.is_2player = self.home_team.is_2player
+
+            away_team, created = TeamTableSnapshot.objects.get_or_create(team=self.away_team)
+            if created:
+                away_team.is_team = self.away_team.is_team
+                away_team.is_2player = self.away_team.is_2player
+
+            home_players = []
+            away_players = []
+            for p in self.home_team.players:
+                player, created = PlayerTableSnapshot.objects.get_or_craete(player=p)
+                home_players.append(player)
+
+            for p in self.away_team.players:
+                player, created = PlayerTableSnapshot.objects.get_or_craete(player=p)
+                away_players.append(player)
+
+            home_team.games += 1
+            away_team.games += 1
+            for player in home_players:
+                player.games += 1
+                player.save()
+            for player in away_players:
+                player.games += 1
+                player.save()
+
             if self.result == '1':
+                for player in home_players:
+                    player.wins += 1
+                    player.save()
+                for player in away_players:
+                    player.losses += 1
+                    player.save()
+                home_team.wins += 1
+                away_team.losses += 1
                 result = 1
             elif self.result == 'X':
+                for player in home_players:
+                    player.draws += 1
+                    player.save()
+                for player in away_players:
+                    player.draws += 1
+                    player.save()
+                home_team.draws += 1
+                away_team.draws += 1
                 result = 0.5
             else:
+                for player in home_players:
+                    player.losses += 1
+                    player.save()
+                for player in away_players:
+                    player.wins += 1
+                    player.save()
+                home_team.losses += 1
+                away_team.wins += 1
                 result = 0
 
             if self.home_team.count_games() <= 30:
@@ -590,6 +615,12 @@ class Game(models.Model):
             np1.save()
             np2 = Points(team=self.away_team,points=p2new)
             np2.save()
+            home_team.points = p1new
+            away_team.points = p2new
+            home_team.point_change = p1new-p1
+            away_team.point_change = p2new-p2
+            home_team.save()
+            away_team.save()
 
         super(Game, self).save(*args, **kwargs)
         try:
@@ -687,26 +718,6 @@ class TwoPlayerGame(models.Model):
             team_points_new = team.get_latest_points() + team_points
             np = Points(team=team, points=team_points_new, game=self.game)
             np.save()
-        """
-        team1_points = 32*(result-e1)
-        team2_points = 32*(1-result-e2)
-
-        team1_e = 1/(1+10**((t1.get_latest_points()-t2.get_latest_points())/400))
-        p1new = t1.get_latest_points() + team1_points*team1_e
-        p2new = t2.get_latest_points() + team1_points*(1-team1_e)
-        team2_e = 1/(1+10**((t3.get_latest_points()-t4.get_latest_points())/400))
-        p3new = t3.get_latest_points() + team2_points*team2_e
-        p4new = t4.get_latest_points() + team2_points*(1-team2_e)
-
-        np1 = Points(team=t1,points=p1new, game=self.game)
-        np1.save()
-        np2 = Points(team=t2,points=p2new, game=self.game)
-        np2.save()
-        np3 = Points(team=t3,points=p3new, game=self.game)
-        np3.save()
-        np4 = Points(team=t4,points=p4new, game=self.game)
-        np4.save()
-        """
 
 class TournamentGroup(models.Model):
     name = models.CharField("Group name", max_length=255)
@@ -795,4 +806,37 @@ class Points(models.Model):
     def __unicode__(self):
         return u'%s: %s - %s' % (self.date, self.team, self.points)
 
+class TeamTableSnapshot(models.Model):
+    team = models.ForeignKey(Team)
+    is_team = models.BooleanField()
+    is_2player = models.BooleanField()
+    points = models.FloatField(default=1500.0)
+    games = models.IntegerField(default=0)
+    wins = models.IntegerField(default=0)
+    draws = models.IntegerField(default=0)
+    losses = models.IntegerField(default=0)
+    point_change = models.FloatField(default=0)
 
+    def __unicode__(self):
+        return self.team.name
+
+class PlayerTableSnapshot(models.Model):
+    player = models.ForeignKey(Player)
+    games = models.IntegerField(default=0)
+    wins = models.IntegerField(default=0)
+    draws = models.IntegerField(default=0)
+    losses = models.IntegerField(default=0)
+    ratio = models.FloatField(default=0)
+
+    def __unicode__(self):
+        return self.player.name
+
+    """
+    def save(self, *args, **kwargs):
+        super(PlayerTableSnapshot, self).save(*args, **kwargs)
+        if self.games == 0:
+            self.ratio = 50
+        else:
+            self.ratio = (self.wins + self.draws/2.0) / float(self.games)
+        self.save()
+    """

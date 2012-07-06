@@ -9,7 +9,7 @@ from collections import defaultdict
 
 import json
 
-from models import Team, Points, Player, Game, Achievement, Tournament, TournamentElimination, EliminationStatus, TournamentGroup
+from models import Team, Points, Player, Game, Achievement, Tournament, TournamentElimination, EliminationStatus, TournamentGroup, TeamTableSnapshot, PlayerTableSnapshot
 
 def score(request):
     teams = Team.objects.all()
@@ -273,35 +273,80 @@ def compare_players(request):
 def view_tournament(request, tournament_id):
     tournament = Tournament.objects.get(pk=tournament_id)
     games = Game.objects.filter(tournament=tournament, tournament_code__startswith='W1')
-    teams = []
-    for game in games:
-        teams.append(game.home_team)
-        teams.append(game.away_team)
-    #teams = tournament.teams()
-    tuple_teams = []
-    ctr = 1
-    old_team = ''
-    for team in teams:
-        if ctr % 2 == 0:
-            tuple_teams.append([old_team, team])
-        else:
-            old_team = team
-        ctr += 1
-    results_w, results_l, results_f = [],[],[]
-    games = Game.objects.filter(tournament=tournament).order_by('tournament_code')
-    for game in games:
-        if list(game.tournament_code)[0] == 'W':
-            results_w.append({'home_score': game.home_score, 'away_score': game.away_score, 'round_num': list(game.tournament_code)[1], 'result':game.result})
-        elif list(game.tournament_code)[0] == 'L':
-            results_l.append({'home_score': game.home_score, 'away_score': game.away_score, 'round_num': list(game.tournament_code)[1], 'result':game.result})
-        else:
-            results_f.append({'home_score': game.home_score, 'away_score': game.away_score, 'round_num': list(game.tournament_code)[1], 'result':game.result})
-    ctx = {'tournament': tournament,
-            'teams': tuple_teams,
-            'results_w': results_w,
-            'results_l': results_l,
-            'results_f': results_f,
-    }
+    if tournament.has_double_elimination and games.count() > 0:
+        teams = []
+        for game in games:
+            teams.append(game.home_team)
+            teams.append(game.away_team)
+        #teams = tournament.teams()
+        tuple_teams = []
+        ctr = 1
+        old_team = ''
+        for team in teams:
+            if ctr % 2 == 0:
+                tuple_teams.append([old_team, team])
+            else:
+                old_team = team
+            ctr += 1
+        results_w, results_l, results_f = [],[],[]
+        games = Game.objects.filter(tournament=tournament).order_by('tournament_code')
+        for game in games:
+            if list(game.tournament_code)[0] == 'W':
+                results_w.append({'home_score': game.home_score, 'away_score': game.away_score, 'round_num': list(game.tournament_code)[1], 'result':game.result})
+            elif list(game.tournament_code)[0] == 'L':
+                results_l.append({'home_score': game.home_score, 'away_score': game.away_score, 'round_num': list(game.tournament_code)[1], 'result':game.result})
+            else:
+                results_f.append({'home_score': game.home_score, 'away_score': game.away_score, 'round_num': list(game.tournament_code)[1], 'result':game.result})
+        ctx = {'tournament': tournament,
+                'teams': tuple_teams,
+                'results_w': results_w,
+                'results_l': results_l,
+                'results_f': results_f,
+        }
+    if tournament.has_groups:
+        groups = TournamentGroup.objects.filter(tournament=tournament)
+        g = {}
+        for group in groups:
+            d = {}
+            for game in group.games.all():
+                d[game.home_team] = {} if game.home_team not in d else d[game.home_team]
+                d[game.away_team] = {} if game.away_team not in d else d[game.away_team]
+                d[game.home_team]['games'] = 0 if 'games' not in d else d[game.home_team]['games']
+                d[game.away_team]['games'] = 0 if 'games' not in d else d[game.away_team]['games']
+                d[game.home_team]['wins'] = 0 if 'wins' not in d else d[game.home_team]['wins']
+                d[game.away_team]['wins'] = 0 if 'wins' not in d else d[game.away_team]['wins']
+                d[game.home_team]['draws'] = 0 if 'draws' not in d else d[game.home_team]['draws']
+                d[game.away_team]['draws'] = 0 if 'draws' not in d else d[game.away_team]['draws']
+                d[game.home_team]['losses'] = 0 if 'losses' not in d else d[game.home_team]['losses']
+                d[game.away_team]['losses'] = 0 if 'losses' not in d else d[game.away_team]['losses']
+                d[game.home_team]['plus'] = 0 if 'plus' not in d else d[game.home_team]['plus']
+                d[game.away_team]['plus'] = 0 if 'plus' not in d else d[game.away_team]['plus']
+                d[game.home_team]['minus'] = 0 if 'minus' not in d else d[game.home_team]['minus']
+                d[game.away_team]['minus'] = 0 if 'minus' not in d else d[game.away_team]['minus']
+                d[game.home_team]['points'] = 0 if 'points' not in d else d[game.home_team]['points']
+                d[game.away_team]['points'] = 0 if 'points' not in d else d[game.away_team]['points']
+                if game.result:
+                    d[game.home_team]['games'] = d[game.home_team]['games'] + 1 if 'games' in d[game.home_team] else 1
+                    d[game.away_team]['games'] = d[game.away_team]['games'] + 1 if 'games' in d[game.away_team] else 1
+                    d[game.home_team]['plus'] = d[game.home_team]['plus'] +  game.home_score if 'plus' in d[game.home_team] else game.home_score
+                    d[game.away_team]['plus'] = d[game.away_team]['plus'] + game.away_score if 'plus' in d[game.away_team] else game.away_score
+                    d[game.home_team]['minus'] = d[game.home_team]['minus'] + game.away_score if 'minus' in d[game.home_team] else game.away_score
+                    d[game.away_team]['minus'] = d[game.away_team]['minus'] + game.home_score if 'minus' in d[game.away_team] else game.home_score
+                    if game.winner() == game.home_team:
+                        d[game.home_team]['points'] = d[game.home_team]['points'] + 3 if 'points' in d[game.home_team] else 3
+                        d[game.home_team]['wins'] = d[game.home_team]['wins'] + 1 if 'wins' in d[game.home_team] else 1
+                        d[game.away_team]['losses'] = d[game.away_team]['losses'] + 1 if 'losses' in d[game.away_team] else 1
+                    elif game.winner() == game.away_team:
+                        d[game.away_team]['points'] = d[game.away_team]['minus'] + 3 if 'points' in d[game.away_team] else 3
+                        d[game.home_team]['losses'] = d[game.home_team]['losses'] + 1 if 'losses' in d[game.home_team] else 1
+                        d[game.away_team]['wins'] = d[game.away_team]['wins'] + 1 if 'wins' in d[game.away_team] else 1
+                    else:
+                        d[game.home_team]['draws'] = d[game.home_team]['draws'] + 1 if 'draws' in d[game.home_team] else 1
+                        d[game.away_team]['draws'] = d[game.away_team]['draws'] + 1 if 'draws' in d[game.away_team] else 1
+            g[group.name] = d
+
+        ctx = {'tournament': tournament,
+                'groups': g}
 
     return render_to_response('core/view_tournament.html', ctx,
                                 context_instance=RequestContext(request))
@@ -386,6 +431,7 @@ def game_combinations(request):
 
 
 def home(request):
+    """
     teams = Team.objects.filter(is_team=True, is_2player=False)
     twoplayers = Team.objects.filter(is_2player=True)
     players = Team.objects.filter(is_team=False, is_2player=False)
@@ -405,6 +451,11 @@ def home(request):
     players = sorted(players, key=lambda t: t.get_latest_points(), reverse=True)
     combined = sorted(combined, key=lambda p: p.win_loss_ratio(), reverse=True)
     points = Points.objects.all() 
-    ctx = {'teams': teams, 'players': players, 'points': points, 'combined': combined, 'twoplayers': twoplayers}
+    """
+    teams = TeamTableSnapshot.objects.filter(is_team=True, is_2player=False).order_by('-points')
+    twoplayers = TeamTableSnapshot.objects.filter(is_2player=True).order_by('-points')
+    players = TeamTableSnapshot.objects.filter(is_team=False, is_2player=False).order_by('-points')
+    combined = PlayerTableSnapshot.objects.all().order_by('-ratio')
+    ctx = {'teams': teams, 'players': players, 'combined': combined, 'twoplayers': twoplayers}
     return render_to_response('core/homepage.html', ctx,
                               context_instance=RequestContext(request))

@@ -69,8 +69,40 @@ $(document).ready(function() {
 <div id="minimal">
     <div class="demo"></div>
 </div>
+<div class="span5">
+    {% for key, group in groups.items %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Lið</th>
+                <th>Leikir</th>
+                <th>Sigrar</th>
+                <th>Jafntefli</th>
+                <th>Töp</th>
+                <th>+</th>
+                <th>-</th>
+                <th>Stig</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for key, team in group.items %}
+            <tr>
+                <td>{{ key }}</td>
+                <td>{{ team.games }}</td>
+                <td>{{ team.wins }}</td>
+                <td>{{ team.draws }}</td>
+                <td>{{ team.losses }}</td>
+                <td>{{ team.plus }}</td>
+                <td>{{ team.minus }}</td>
+                <td>{{ team.points }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endfor %}
+</div>
 <table class="table">
-  <thead>
+    <thead>
     <tr>
       <th></th>
       <th>Heimalið</th>
@@ -84,7 +116,7 @@ $(document).ready(function() {
     {% for game in tournament.game_set.all %}
     {% if not game.result %}
     <tr>
-      <td>{{ game.tournamentelimination_set.all.0.status.name }}</td>
+        <td>{{ game.tournamentelimination_set.all.0.status.name }}{{ game.tournamentgroup_set.all.0.name }}</td>
       <td>
         {% if game.home_team %}
         <a href="{% url view-team game.home_team.pk %}">

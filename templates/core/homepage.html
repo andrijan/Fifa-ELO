@@ -118,8 +118,9 @@
             <tr class="team" id="{{ team.pk }}">
                 <td class="team-id" id="{{ team.pk }}">{{ forloop.counter }}</td>
                 <td>
-                    {% if team.favourite_fifa_team %}<img src="{{ MEDIA_URL }}/{{ team.favourite_fifa_team.image }}" style="height:16px;width:16px;" />{% endif %}
-                    <a class="team-name" href="{% url view-team team.pk %}">{{ team.name }}</a>
+                    {% if team.team.favourite_fifa_team %}<img src="{{ MEDIA_URL }}/{{ team.team.favourite_fifa_team.image }}" style="height:16px;width:16px;" />{% endif %}
+                    <a class="team-name" href="{% url view-team team.team.pk %}">{{ team.team.name }}</a>
+                    {% comment %}
                     {% for a in team.achievement_set.all %}
                     {% if a.is_highest %}
                     {% if a.game.all %}
@@ -131,13 +132,15 @@
                     {% endif %}
                     {% endif %}
                     {% endfor %}
+                    {% endcomment %}
                 </td>
-                <td>{{ team.get_latest_points|floatformat:"0"|intcomma }}</td>
-                <td>{{ team.count_games }}</td>
-                <td>{{ team.count_wins }}</td>
-                <td>{{ team.count_draws }}</td>
-                <td>{{ team.count_losses }}</td>
+                <td>{{ team.points|floatformat:"0"|intcomma }}</td>
+                <td>{{ team.games }}</td>
+                <td>{{ team.wins }}</td>
+                <td>{{ team.draws }}</td>
+                <td>{{ team.losses }}</td>
                 <td>
+                    {% comment %}
                     {%  ifnotequal team.get_change "same" %}
                     <img src="
                         {% ifequal team.get_change "down" %}/assets/static/img/Arrow-Down.png
@@ -145,11 +148,12 @@
                             {% ifequal team.get_change "up" %}/assets/static/img/Arrow-Up.png
                         {% endifequal %}{% endifequal %}" style="height:16px;"/>
                     {% endifnotequal %}
+                    {% endcomment %}
                 </td>
                 <td>
                     <span class="label
-                        {% if team.get_score_change < 0  %} label-important{% else %}{% if team.get_score_change > 0 %} label-success{% else %} label-info{% endif %}{% endif %}">
-                        {{ team.get_score_change|floatformat:"2" }}
+                        {% if team.point_change < 0  %} label-important{% else %}{% if team.point_change > 0 %} label-success{% else %} label-info{% endif %}{% endif %}">
+                        {{ team.point_change|floatformat:"2" }}
                     </span>
                 </td>
             </tr>
@@ -171,8 +175,9 @@
             <tr class="team">
                 <td class="team-id" id="{{ team.pk }}">{{ forloop.counter }}</td>
                 <td>
-                    {% if team.favourite_fifa_team %}<img src="{{ MEDIA_URL }}/{{ team.favourite_fifa_team.image }}" style="height:16px;width:16px;" />{% endif %}
-                    <a class="team-name" href="{% url view-team team.pk %}">{{ team.name }}</a>
+                    {% if team.team.favourite_fifa_team %}<img src="{{ MEDIA_URL }}/{{ team.team.favourite_fifa_team.image }}" style="height:16px;width:16px;" />{% endif %}
+                    <a class="team-name" href="{% url view-team team.team.pk %}">{{ team.team.name }}</a>
+                    {% comment %}
                     {% for a in team.achievement_set.all %}
                     {% if a.is_highest %}
                     {% if a.game.all %}
@@ -184,13 +189,15 @@
                     {% endif %}
                     {% endif %}
                     {% endfor %}
+                    {% endcomment %}
                 </td>
-                <td>{{ team.get_latest_points|floatformat:"0"|intcomma }}</td>
-                <td>{{ team.count_games }}</td>
-                <td>{{ team.count_wins }}</td>
-                <td>{{ team.count_draws }}</td>
-                <td>{{ team.count_losses }}</td>
+                <td>{{ team.points|floatformat:"0"|intcomma }}</td>
+                <td>{{ team.games }}</td>
+                <td>{{ team.wins }}</td>
+                <td>{{ team.draws }}</td>
+                <td>{{ team.losses }}</td>
                 <td>
+                    {% comment %}
                     {%  ifnotequal team.get_change "same" %}
                     <img src="
                         {% ifequal team.get_change "down" %}/assets/static/img/Arrow-Down.png
@@ -199,11 +206,12 @@
                                 {% endifequal %}
                                 {% endifequal %}" style="height:16px;"/>
                     {% endifnotequal %}
+                    {% endcomment %}
                 </td>
                 <td>
                     <span class="label
-                        {% if team.get_score_change < 0  %} label-important{% else %}{% if team.get_score_change > 0 %} label-success{% else %} label-info{% endif %}{% endif %}">
-                        {{ team.get_score_change|floatformat:"2" }}
+                        {% if team.point_change < 0  %} label-important{% else %}{% if team.point_change > 0 %} label-success{% else %} label-info{% endif %}{% endif %}">
+                        {{ team.point_change|floatformat:"2" }}
                     </span>
                 </td>
             </tr>
@@ -227,8 +235,9 @@
             <tr class="team">
                 <td class="team-id" id="{{ team.pk }}">{{ forloop.counter }}</td>
                 <td>
-                    {% if team.favourite_fifa_team %}<img src="{{ MEDIA_URL }}/{{ team.favourite_fifa_team.image }}" style="height:16px;width:16px;" />{% endif %}
-                    <a class="team-name" href="{% url view-team team.pk %}">{{ team.name }}</a>
+                    {% if team.team.favourite_fifa_team %}<img src="{{ MEDIA_URL }}/{{ team.team.favourite_fifa_team.image }}" style="height:16px;width:16px;" />{% endif %}
+                    <a class="team-name" href="{% url view-team team.team.pk %}">{{ team.team.name }}</a>
+                    {% comment %}
                     {% for a in team.achievement_set.all %}
                     {% if a.is_highest %}
                     {% if a.game.all %}
@@ -240,13 +249,15 @@
                     {% endif %}
                     {% endif %}
                     {% endfor %}
+                    {% endcomment %}
                 </td>
-                <td>{{ team.get_latest_points|floatformat:"0"|intcomma }}</td>
-                <td>{{ team.count_games }}</td>
-                <td>{{ team.count_wins }}</td>
-                <td>{{ team.count_draws }}</td>
-                <td>{{ team.count_losses }}</td>
+                <td>{{ team.points|floatformat:"0"|intcomma }}</td>
+                <td>{{ team.games }}</td>
+                <td>{{ team.wins }}</td>
+                <td>{{ team.draws }}</td>
+                <td>{{ team.losses }}</td>
                 <td>
+                    {% comment %}
                     {%  ifnotequal team.get_change "same" %}
                     <img src="
                         {% ifequal team.get_change "down" %}/assets/static/img/Arrow-Down.png
@@ -255,11 +266,12 @@
                                 {% endifequal %}
                                 {% endifequal %}" style="height:16px;"/>
                     {% endifnotequal %}
+                    {% endcomment %}
                 </td>
                 <td>
                     <span class="label
-                        {% if team.get_score_change < 0  %} label-important{% else %}{% if team.get_score_change > 0 %} label-success{% else %} label-info{% endif %}{% endif %}">
-                        {{ team.get_score_change|floatformat:"2" }}
+                        {% if team.point_change < 0  %} label-important{% else %}{% if team.point_change > 0 %} label-success{% else %} label-info{% endif %}{% endif %}">
+                        {{ team.point_change|floatformat:"2" }}
                     </span>
                 </td>
             </tr>
@@ -278,12 +290,12 @@
             {% for team in combined %}
             <tr class="player">
                 <td class="player-id" id="{{ team.pk }}">{{ forloop.counter }}</td>
-                <td class="player-name"><a href="{% url view-player team.pk %}">{{ team.name }}</a></td>
-                <td>{{ team.count_games }}</td>
-                <td>{{ team.count_wins }}</td>
-                <td>{{ team.count_draws }}</td>
-                <td>{{ team.count_losses }}</td>
-                <td>{{ team.win_loss_ratio_percentage|floatformat:2 }} %</td>
+                <td class="player-name"><a href="{% url view-player team.player.pk %}">{{ team.player.name }}</a></td>
+                <td>{{ team.games }}</td>
+                <td>{{ team.wins }}</td>
+                <td>{{ team.draws }}</td>
+                <td>{{ team.losses }}</td>
+                <td>{{ team.ratio|floatformat:2 }} %</td>
             </tr>
             {% endfor %}
         </table>
