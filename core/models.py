@@ -533,12 +533,12 @@ class Game(models.Model):
 
             home_players = []
             away_players = []
-            for p in self.home_team.players:
-                player, created = PlayerTableSnapshot.objects.get_or_craete(player=p)
+            for p in self.home_team.players.all():
+                player, created = PlayerTableSnapshot.objects.get_or_create(player=p)
                 home_players.append(player)
 
-            for p in self.away_team.players:
-                player, created = PlayerTableSnapshot.objects.get_or_craete(player=p)
+            for p in self.away_team.players.all():
+                player, created = PlayerTableSnapshot.objects.get_or_create(player=p)
                 away_players.append(player)
 
             home_team.games += 1
