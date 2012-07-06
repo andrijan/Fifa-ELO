@@ -9,8 +9,8 @@ from compiler import compile
 MAX = 32
 INITIAL_POINTS = 1500.0
 
-def create_seed_order(bracket_list=[1,2,3,4]):
-    if len(bracket_list):
+def create_seed_order(bracket_list=[1,2,3,4], fill_empty=True):
+    if len(bracket_list) and fill_empty:
         bracket_size = int(2**math.ceil(math.log(len(bracket_list),2)))
         for i in range(len(bracket_list),bracket_size):
             bracket_list.append(Team.objects.get(name="Steinar"))
@@ -40,24 +40,38 @@ class FifaTeam(models.Model):
 
 class Player(models.Model):
     name = models.CharField("Team name", max_length=255, blank=True, null=True)
-
-    
+    num_games = models.IntegerField(blank=True, null=True)
+    num_wins = models.IntegerField(blank=True, null=True)
+    num_draws = models.IntegerField(blank=True, null=True)
+    num_losses = models.IntegerField(blank=True, null=True)
 
     def list_games(self):
         games = Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self]) | Q(away_team__players__in=[self])).order_by('-date').distinct()
         return games
 
     def count_games(self):
-        return Game.objects.filter(result__isnull=False).filter(Q(home_team__players=self) | Q(away_team__players=self)).distinct().count()
+        if not self.num_games:
+            self.num_games = Game.objects.filter(result__isnull=False).filter(Q(home_team__players=self) | Q(away_team__players=self)).distinct().count()
+            self.save()
+        return self.num_games
 
     def count_wins(self):
-        return Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self], result='1') | Q(away_team__players__in=[self], result='2')).distinct().count()
+        if not self.num_wins:
+            self.num_wins = Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self], result='1') | Q(away_team__players__in=[self], result='2')).distinct().count()
+            self.save()
+        return self.num_wins
 
     def count_draws(self):
-        return Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self], result='X') | Q(away_team__players__in=[self], result='X')).distinct().count()
+        if not self.num_draws:
+            self.num_draws = Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self], result='X') | Q(away_team__players__in=[self], result='X')).distinct().count()
+            self.save()
+        return self.num_draws
 
     def count_losses(self):
-        return Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self], result='2') | Q(away_team__players__in=[self], result='1')).distinct().count()
+        if not self.num_losses:
+            self.num_losses = Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self], result='2') | Q(away_team__players__in=[self], result='1')).distinct().count()
+            self.save()
+        return self.num_losses
 
     def win_loss_ratio(self):
         try:
@@ -82,6 +96,11 @@ class Team(models.Model):
     image = models.ImageField(upload_to="teams", blank=True, null=True)
 
     favourite_fifa_team = models.ForeignKey(FifaTeam, blank=True, null=True)
+
+    num_games = models.IntegerField(blank=True, null=True)
+    num_wins = models.IntegerField(blank=True, null=True)
+    num_draws = models.IntegerField(blank=True, null=True)
+    num_losses = models.IntegerField(blank=True, null=True)
 
     def find_fifa_team(self):
         home_games = Game.objects.filter(home_team=self).values('home_fifa_team').annotate(Count('home_fifa_team'))
@@ -160,16 +179,28 @@ class Team(models.Model):
         return current - old
 
     def count_games(self):
-        return self.list_home_games().count() + self.list_away_games().count()
+        if not self.num_games:
+            self.num_games = self.list_home_games().count() + self.list_away_games().count()
+            self.save()
+        return self.num_games
 
     def count_wins(self):
-        return self.list_home_games(result='1').count() + self.list_away_games(result='2').count()
+        if not self.num_wins:
+            self.num_wins = self.list_home_games(result='1').count() + self.list_away_games(result='2').count()
+            self.save()
+        return self.num_wins
 
     def count_draws(self):
-        return self.list_home_games(result='X').count() + self.list_away_games(result='X').count()
+        if not self.num_draws:
+            self.num_draws = self.list_home_games(result='X').count() + self.list_away_games(result='X').count()
+            self.save()
+        return self.num_draws
 
     def count_losses(self):
-        return self.list_home_games(result='2').count() + self.list_away_games(result='1').count()
+        if not self.num_losses:
+            self.num_losses = self.list_home_games(result='2').count() + self.list_away_games(result='1').count()
+            self.save()
+        return self.num_losses
 
     def count_goals(self):
         goals = 0
@@ -313,12 +344,15 @@ class Tournament(models.Model):
     players = models.ManyToManyField(Player)
     is_team = models.BooleanField(default=True)
     has_groups = models.BooleanField()
+    num_groups = models.IntegerField(null=True, blank=True)
+    double_rounds = models.BooleanField()
+    has_single_elimination = models.BooleanField()
     has_double_elimination = models.BooleanField()
 
     def __unicode__(self):
         return u'%s' % self.name
 
-    def teams(self):
+    def teams(self, fill_empty=True):
         players = sorted(self.players.all(), key=lambda p: p.team().get_latest_points(), reverse=False)
         teams = []
         if self.is_team:
@@ -327,27 +361,43 @@ class Tournament(models.Model):
         else:
             while players:
                 teams.append(Team.objects.get(players__in=[players.pop()], is_2player=False, is_team=False))
-        teams = create_seed_order(teams)
+        teams = create_seed_order(teams, fill_empty)
         return teams
 
 
     def clean(self, *args, **kwargs):
         super(Tournament, self).save(*args, **kwargs)
-        teams = self.teams()
         if self.has_groups:
-            try:
-                group = TournamentGroup.objects.get(name="Group A", tournament=self)
-            except:
-                group = TournamentGroup(name="Group A", tournament=self)
+            teams = self.teams(fill_empty=False)
+            for g in range(self.num_groups):
+                group_name = "Group %s" % str(g+1)
+                group,created = TournamentGroup.objects.get_or_create(name=group_name, tournament=self)
                 group.save()
-            for round_num in roundRobin(teams):
-                for g in round_num:
-                    if g[0] is not None and g[1] is not None:
-                        game = Game(home_team=g[0], away_team=g[1], tournament=self)
-                        game.save()
-                        group.games.add(game)
-                        group.save()
+            groups = TournamentGroup.objects.filter(tournament=self)
+            ctr = 0
+            sorted_groups = {}
+            for group in groups:
+                sorted_groups[ctr] = teams[ctr::groups.count()]
+                ctr += 1
+            for key, teams in sorted_groups.items():
+                group_name = "Group %s" % str(key+1)
+                group = TournamentGroup.objects.get(name=group_name, tournament=self)
+                for round_num in roundRobin(teams):
+                    for g in round_num:
+                        if g[0] is not None and g[1] is not None:
+                            game = Game(home_team=g[0], away_team=g[1], tournament=self)
+                            game.save()
+                            group.games.add(game)
+                            group.save()
+                    if self.double_rounds:
+                        for g in round_num:
+                            if g[0] is not None and g[1] is not None:
+                                game = Game(home_team=g[0], away_team=g[1], tournament=self)
+                                game.save()
+                                group.games.add(game)
+                                group.save()
         elif self.has_double_elimination:
+            teams = self.teams()
             ctr = 1
             old_team = None
             for team in teams:
@@ -447,7 +497,7 @@ class Game(models.Model):
                     achievement.save()
 
     def save(self, *args, **kwargs):
-        if self.tournament and self.result:
+        if self.tournament and self.result and self.tournament.has_double_elimination:
             code = list(self.tournament_code)
             bracket = code[0]
             b_round = code[1]
@@ -670,24 +720,12 @@ class TournamentGroup(models.Model):
         teams = {}
         for game in self.games.all():
             if game.result == "1":
-                try:
-                    teams[game.home_team] = teams[game.home_team] + 3
-                except:
-                    teams[game.home_team] = 3
+                teams[game.home_team] = teams[game.home_team] + 3 if game.home_team in teams else 3
             elif game.result == "X":
-                try:
-                    teams[game.home_team] = teams[game.home_team] + 1
-                except:
-                    teams[game.home_team] = 1
-                try:
-                    teams[game.away_team] = teams[game.away_team] + 1
-                except:
-                    teams[game.away_team] = 1
+                teams[game.home_team] = teams[game.home_team] + 1 if game.home_team in teams else 1
+                teams[game.away_team] = teams[game.away_team] + 1 if game.away_team in teams else 1
             elif game.result == "2":
-                try:
-                    teams[game.away_team] = teams[game.away_team] + 3
-                except:
-                    teams[game.away_team] = 3
+                teams[game.away_team] = teams[game.away_team] + 3 if game.away_team in teams else 3
         teams = sorted(teams.iteritems(), key=operator.itemgetter(1), reverse=True)
         num_teams = int(2**(math.floor(math.log(len(teams),2))))
         return teams[0:num_teams]
