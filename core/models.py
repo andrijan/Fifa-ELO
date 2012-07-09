@@ -3,6 +3,7 @@ import math
 
 from django.db import models
 from django.db.models import Q, Count
+from django import forms
 from datetime import datetime, time, timedelta, date
 from compiler import compile
 
@@ -642,6 +643,23 @@ class Game(models.Model):
 
             if self.home_team.is_team:
                 TwoPlayerGame.objects.create(game=self)
+
+class GameForm(forms.ModelForm):
+    def save(self, force_incert=False, force_update=False, commit=True):
+        m = super(GameForm, self).save(commit=False)
+        if self.data['home_score'] > self.data['away_score']:
+            m.result = "1"
+        elif self.data['home_score'] < self.data['away_score']:
+            m.result = "2"
+        elif self.data['home_score'] == self.data['away_score']:
+            m.result = "X"
+        if commit:
+            m.save()
+        return m
+
+    class Meta:
+        exclude = ('result',)
+        model = Game
 
 class TwoPlayerGame(models.Model):
     game = models.ForeignKey(Game)

@@ -2,7 +2,14 @@
 {% load humanize googlecharts %}
 {% block extra_head %}
 <script type="text/javascript">
+    $(document).ready(function() {
+            var $dialog = $('<div></div>').load("/game/form/").dialog({autoOpen: false, title: '', modal:true, width:400});
+            $("#new_game").live('click', function() {
+                $dialog.dialog('open');
+                });
+            });
     $(function() {
+
             $(".team").draggable({
                 helper: function(event){
                 return $('<div class="drag-cart-item"><table></table></div>')

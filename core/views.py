@@ -9,7 +9,7 @@ from collections import defaultdict
 
 import json
 
-from models import Team, Points, Player, Game, Achievement, Tournament, TournamentElimination, EliminationStatus, TournamentGroup, TeamTableSnapshot, PlayerTableSnapshot
+from models import Team, Points, Player, Game, Achievement, Tournament, TournamentElimination, EliminationStatus, TournamentGroup, TeamTableSnapshot, PlayerTableSnapshot, GameForm
 
 def score(request):
     teams = Team.objects.all()
@@ -428,6 +428,17 @@ def game_combinations(request):
     return render_to_response('core/game_combinations.html', ctx,
                                 context_instance=RequestContext(request))
 
+def game_form(request, game_id=None):
+    if request.method == "POST":
+        form = GameForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse('home'))
+    else:
+        form = GameForm()
+
+    return render_to_response('core/game_form.html', {'form': form},
+                                context_instance=RequestContext(request))
 
 
 def home(request):

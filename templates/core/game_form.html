@@ -1,0 +1,19 @@
+{% extends "content.html" %}
+{% block main %}
+<div class="alert alert-info span4">
+  <form class="form-horizontal" method="post" action="{% url game-form %}">
+    {% csrf_token %}
+    {% for field in form %}
+    <fieldset>
+      <div class="control-group">
+        <label class="control-label" for="id_{{ field.html_name }}">{{ field.label }}</label>
+        <div class="controls">
+          {{ field }}
+        </div>
+      </div>
+    </fieldset>
+    {% endfor %}
+    <input type="submit" value="Submit" class="btn btn-success" />
+  </form>
+</div>
+{% endblock main %}
