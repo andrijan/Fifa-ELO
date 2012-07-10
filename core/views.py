@@ -64,7 +64,7 @@ def view_player(request, player_id):
 
 def all_teams(request):
     is_team = request.GET.get('is_team', False)
-    teams = Team.objects.filter(is_team=is_team)
+    teams = Team.objects.filter(is_team=is_team, is_2player=False)
     dates = Points.objects.all().dates('game__date', 'day')
     points = []
     for date in dates:
