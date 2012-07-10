@@ -47,6 +47,7 @@ class Player(models.Model):
     name = models.CharField("Team name", max_length=255, blank=True, null=True)
     active = models.BooleanField(default=True)
     objects = PlayerManager()
+    objects_with_deleted = models.Manager()
 
     def list_games(self):
         games = Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self]) | Q(away_team__players__in=[self])).order_by('-date').distinct()
@@ -99,6 +100,7 @@ class Team(models.Model):
     num_losses = models.IntegerField(blank=True, null=True)
 
     objects = TeamManager()
+    objects_with_deleted = models.Manager()
 
     def find_fifa_team(self):
         home_games = Game.objects.filter(home_team=self).values('home_fifa_team').annotate(Count('home_fifa_team'))

@@ -2,6 +2,16 @@ from django.contrib import admin
 
 from models import Achievement, Player, Team, Game, Points, FifaTeam, AchievementTemplate, TournamentGroup, Tournament, TournamentElimination, EliminationStatus
 
+class PlayerAdmin(admin.ModelAdmin):
+    def queryset(self, request):
+        qs = self.model.objects_with_deleted.all()
+        return qs
+
+class TeamAdmin(admin.ModelAdmin):
+    def queryset(self, request):
+        qs = self.model.objects_with_deleted.all()
+        return qs
+
 class AchievementAdmin(admin.ModelAdmin):
     list_display = ('team', 'template', 'points')
 
@@ -15,7 +25,7 @@ admin.site.register(TournamentGroup)
 admin.site.register(AchievementTemplate)
 admin.site.register(FifaTeam)
 admin.site.register(Achievement, AchievementAdmin)
-admin.site.register(Player)
-admin.site.register(Team)
+admin.site.register(Player, PlayerAdmin)
+admin.site.register(Team, TeamAdmin)
 admin.site.register(Game, GameAdmin)
 admin.site.register(Points)
