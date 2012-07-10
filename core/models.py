@@ -39,8 +39,14 @@ class FifaTeam(models.Model):
     def __unicode__(self):
         return u'%s' % self.name
 
+class PlayerManager(models.Manager):
+    def get_query_set(self):
+        return super(PlayerManager, self).get_query_set().filter(active=True)
+
 class Player(models.Model):
     name = models.CharField("Team name", max_length=255, blank=True, null=True)
+    active = models.BooleanField(default=True)
+    objects = PlayerManager()
 
     def list_games(self):
         games = Game.objects.filter(result__isnull=False).filter(Q(home_team__players__in=[self]) | Q(away_team__players__in=[self])).order_by('-date').distinct()
@@ -73,6 +79,11 @@ class Player(models.Model):
     def __unicode__(self):
         return u'%s' % self.name
 
+class TeamManager(models.Manager):
+    def get_query_set(self):
+        return super(TeamManager, self).get_query_set().exclude(players__active=False)
+
+
 class Team(models.Model):
     name = models.CharField("Team name", max_length=255, blank=True, null=True)
     players = models.ManyToManyField(Player)
@@ -86,6 +97,8 @@ class Team(models.Model):
     num_wins = models.IntegerField(blank=True, null=True)
     num_draws = models.IntegerField(blank=True, null=True)
     num_losses = models.IntegerField(blank=True, null=True)
+
+    objects = TeamManager()
 
     def find_fifa_team(self):
         home_games = Game.objects.filter(home_team=self).values('home_fifa_team').annotate(Count('home_fifa_team'))
