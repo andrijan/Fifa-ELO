@@ -140,7 +140,7 @@ $(document).ready(function() {
         {% else %}
         TBA
         {% endif %}
-        <td>{% if game.display_score %}{{ game.display_score }}{% else %}<a href="{% url admin:core_game_change game.pk %}">Leikur ekki hafinn</a>{% endif %}</td>
+        <td>{% if game.display_score %}{{ game.display_score }}{% else %}<a href="{% url game-form game.pk %}">Leikur ekki hafinn</a>{% endif %}</td>
     </tr>
     {% endif %}
     {% endfor %}

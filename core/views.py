@@ -435,7 +435,11 @@ def game_form(request, game_id=None):
             form.save()
             return HttpResponseRedirect(reverse('home'))
     else:
-        form = GameForm()
+        if game_id:
+            game = Game.objects.get(pk=game_id)
+            form = GameForm(instance=game)
+        else:
+            form = GameForm()
 
     return render_to_response('core/game_form.html', {'form': form},
                                 context_instance=RequestContext(request))
