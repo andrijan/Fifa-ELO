@@ -445,7 +445,7 @@ def game_form(request, game_id=None):
         else:
             form = GameForm()
 
-    return render_to_response('core/game_form.html', {'form': form},
+    return render_to_response('core/game_form.html', {'form': form, 'game_id': game_id},
                                 context_instance=RequestContext(request))
 
 

@@ -1,7 +1,7 @@
 {% extends "content.html" %}
 {% block main %}
 <div class="alert alert-info span4">
-  <form class="form-horizontal" method="post" action="{% url game-form %}">
+  <form class="form-horizontal" method="post" action="{% if game_id %}{% url game-form game_id %}{% else %}{% url game-form %}{% endif %}">
     {% csrf_token %}
     {% for field in form %}
     <fieldset>
