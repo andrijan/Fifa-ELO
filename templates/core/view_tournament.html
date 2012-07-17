@@ -50,11 +50,14 @@ var minimalData = {
     {% endfor %}
     ]]
   }
- 
-$(document).ready(function() {
-    $('#minimal .demo').bracket({
-      init: minimalData /* data to initialize the bracket with */ })
-  })
+
+  $(document).ready(function() {
+      $('#minimal .demo').bracket({init: minimalData /* data to initialize the bracket with */ })
+      $("#new_game").live('click', function() {
+          var $dialog = $('<div></div>').load("/game/form/747/").dialog({autoOpen: false, title: '', modal:true, width:400});
+          $dialog.dialog('open');
+      });
+  });
 </script>
 {% endblock extra_head %}
 {% block main %}
