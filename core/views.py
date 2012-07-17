@@ -430,7 +430,11 @@ def game_combinations(request):
 
 def game_form(request, game_id=None):
     if request.method == "POST":
-        form = GameForm(request.POST)
+        if game_id:
+            game = Game.objects.get(pk=game_id)
+            form = GameForm(request.POST, instance=game)
+        else:
+            form = GameForm(request.POST)
         if form.is_valid():
             form.save()
             return HttpResponseRedirect(reverse('home'))
