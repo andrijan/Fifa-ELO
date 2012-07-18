@@ -341,6 +341,8 @@ def view_tournament(request, tournament_id):
                         d[game.home_team]['losses'] = d[game.home_team]['losses'] + 1 if 'losses' in d[game.home_team] else 1
                         d[game.away_team]['wins'] = d[game.away_team]['wins'] + 1 if 'wins' in d[game.away_team] else 1
                     else:
+                        d[game.home_team]['points'] = d[game.home_team]['points'] + 1 if 'points' in d[game.home_team] else 1
+                        d[game.away_team]['points'] = d[game.away_team]['points'] + 1 if 'points' in d[game.away_team] else 1
                         d[game.home_team]['draws'] = d[game.home_team]['draws'] + 1 if 'draws' in d[game.home_team] else 1
                         d[game.away_team]['draws'] = d[game.away_team]['draws'] + 1 if 'draws' in d[game.away_team] else 1
             g[group.name] = d
