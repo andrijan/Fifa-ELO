@@ -637,6 +637,12 @@ class Game(models.Model):
             away_team.point_change = p2new-p2
             home_team.save()
             away_team.save()
+            try:
+                king = KingOfTheHill.objects.get(team=self.loser(), is_team=self.loser().is_team)
+                king.team = self.winner()
+                king.save()
+            except:
+                pass
 
         super(Game, self).save(*args, **kwargs)
         try:
@@ -873,3 +879,10 @@ class PlayerTableSnapshot(models.Model):
             self.ratio = (self.wins + self.draws/2.0) / float(self.games)
         self.save()
     """
+
+class KingOfTheHill(models.Model):
+    team = models.ForeignKey(Team)
+    is_team = models.BooleanField()
+
+    def __unicode__(self):
+        return '%s - %s' % (self.team.name, self.is_team)

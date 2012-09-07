@@ -7,9 +7,9 @@ from django.template import RequestContext
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from collections import defaultdict
 
-import json
+import json, datetime
 
-from models import Team, Points, Player, Game, Achievement, Tournament, TournamentElimination, EliminationStatus, TournamentGroup, TeamTableSnapshot, PlayerTableSnapshot, GameForm
+from models import Team, Points, Player, Game, Achievement, Tournament, TournamentElimination, EliminationStatus, TournamentGroup, TeamTableSnapshot, PlayerTableSnapshot, GameForm, KingOfTheHill
 
 def score(request):
     teams = Team.objects.all()
@@ -477,6 +477,11 @@ def home(request):
     twoplayers = TeamTableSnapshot.objects.filter(is_2player=True).order_by('-points')
     players = TeamTableSnapshot.objects.filter(is_team=False, is_2player=False).order_by('-points')
     combined = PlayerTableSnapshot.objects.all().order_by('-ratio')
-    ctx = {'teams': teams, 'players': players, 'combined': combined, 'twoplayers': twoplayers}
+    andri = Team.objects.get(pk=1)
+    game = andri.list_games().filter(Q(home_team=andri, result='2') | Q(away_team=andri, result='1')).order_by('-date')[0]
+    days = (datetime.datetime.now() - game.date).days
+    king = KingOfTheHill.objects.get(is_team=False)
+    ctx = {'teams': teams, 'players': players, 'combined': combined, 'twoplayers': twoplayers, 'days': days, 'king': king}
+
     return render_to_response('core/homepage.html', ctx,
                               context_instance=RequestContext(request))
