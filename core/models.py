@@ -889,7 +889,7 @@ class PlayerTableSnapshot(models.Model):
 class KingOfTheHill(models.Model):
     team = models.ForeignKey(Team)
     is_team = models.BooleanField()
-    games = models.IntegerField()
+    games = models.IntegerField(default=1)
 
     def __unicode__(self):
         return '%s - %s' % (self.team.name, self.is_team)
