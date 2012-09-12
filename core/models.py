@@ -640,9 +640,15 @@ class Game(models.Model):
             try:
                 king = KingOfTheHill.objects.get(team=self.loser(), is_team=self.loser().is_team)
                 king.team = self.winner()
+                king.games = 1
                 king.save()
             except:
-                pass
+                try:
+                    king = KingOfTheHill.objects.get(team=self.winner(), is_team=self.winner().is_team)
+                    king.games = king.games + 1
+                    king.save()
+                except:
+                    pass
 
         super(Game, self).save(*args, **kwargs)
         try:
@@ -883,6 +889,7 @@ class PlayerTableSnapshot(models.Model):
 class KingOfTheHill(models.Model):
     team = models.ForeignKey(Team)
     is_team = models.BooleanField()
+    games = models.IntegerField()
 
     def __unicode__(self):
         return '%s - %s' % (self.team.name, self.is_team)
