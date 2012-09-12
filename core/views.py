@@ -477,9 +477,12 @@ def home(request):
     twoplayers = TeamTableSnapshot.objects.filter(is_2player=True).order_by('-points')
     players = TeamTableSnapshot.objects.filter(is_team=False, is_2player=False).order_by('-points')
     combined = PlayerTableSnapshot.objects.all().order_by('-ratio')
+    """
     andri = Team.objects.get(pk=1)
     game = andri.list_games().filter(Q(home_team=andri, result='2') | Q(away_team=andri, result='1')).order_by('-date')[0]
     days = (datetime.datetime.now() - game.date).days
+    """
+    days = 0
     king = KingOfTheHill.objects.get(is_team=False)
     ctx = {'teams': teams, 'players': players, 'combined': combined, 'twoplayers': twoplayers, 'days': days, 'king': king}
 
